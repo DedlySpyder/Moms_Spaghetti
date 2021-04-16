@@ -1,0 +1,14 @@
+{
+  "name": "Moms_Spaghetti",
+  "version": "0.0.1",
+  "title": "Mom'S Spaghetti",
+  "author": "DedlySpyder",
+  "contact": "DedlySpyder@gmail.com",
+  "homepage": "",
+  "description": "",
+  "dependencies": [
+    "base >= 1.1.0",
+    "DedLib >= 0.0.1"
+  ],
+  "factorio_version": "1.1"
+}
