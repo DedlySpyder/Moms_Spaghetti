@@ -16,7 +16,7 @@ end
 function Area_Management.convert_chunk(position) -- TODO needs surface?
     local surface = game.surfaces["nauvis"]
 
-    Logger.trace("Attempting to convert chunk")
+    Logger.debug("Attempting to convert chunk")
     position = Area.standardize_position(position)
     local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
     if oldChunkData then

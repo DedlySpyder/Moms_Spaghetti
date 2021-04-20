@@ -13,7 +13,7 @@ function Storage.Chunks._position_to_string(position)
 end
 
 function Storage.Chunks.add_chunk(surface, chunkPosition)
-    Storage.Chunks._LOGGER.trace("Adding chunk")
+    Storage.Chunks._LOGGER.debug("Adding chunk")
     if not surface.valid then
         Storage.Chunks._LOGGER.error("Surface is invalid")
         return false
@@ -31,7 +31,7 @@ function Storage.Chunks.add_chunk(surface, chunkPosition)
     end
 
     if not global[surfaceName] then
-        Storage.Chunks._LOGGER.trace("Adding surface to global chunk table: " .. surfaceName)
+        Storage.Chunks._LOGGER.debug("Adding surface to global chunk table: " .. surfaceName)
         global[surfaceName] = {}
     end
 
@@ -41,12 +41,12 @@ function Storage.Chunks.add_chunk(surface, chunkPosition)
 end
 
 function Storage.Chunks.add_chunk_from_position(surface, position)
-    Storage.Chunks._LOGGER.trace("Adding chunk by position")
+    Storage.Chunks._LOGGER.debug("Adding chunk by position")
     return Storage.Chunks.add_chunk(surface, AREA.get_chunk_position_from_position(position))
 end
 
 function Storage.Chunks.get_chunk(surface, chunkPosition)
-    Storage.Chunks._LOGGER.trace("Getting chunk")
+    Storage.Chunks._LOGGER.debug("Getting chunk")
     if not surface.valid then
         Storage.Chunks._LOGGER.error("Surface is invalid")
         return
@@ -70,7 +70,7 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
 end
 
 function Storage.Chunks.get_chunk_from_position(surface, position)
-    Storage.Chunks._LOGGER.trace("Getting chunk from position")
+    Storage.Chunks._LOGGER.debug("Getting chunk from position")
     return Storage.Chunks.get_chunk(surface, AREA.get_chunk_position_from_position(position))
 end
 
