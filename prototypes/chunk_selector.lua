@@ -36,5 +36,12 @@ data:extend({
             filename = "__Moms_Spaghetti__/graphics/allowed_tile.png", --TODO - plate icon
             size = 32
         }
+    },
+    {
+        type = "custom-input",
+        name = "MomsSpaghetti_chunk_selector",
+        key_sequence = "CONTROL + S",
+        action = "spawn-item",
+        item_to_spawn = "MomsSpaghetti_chunk_selector"
     }
 })
