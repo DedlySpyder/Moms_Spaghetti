@@ -23,49 +23,5 @@ for name, entity in pairs(data.raw["assembling-machine"]) do
     Logger.debug(entity.collision_mask)
 end
 
-data:extend({
-    {
-        name = "MomsSpaghetti_allowed_tile",
-        type = "tile",
-        order = "zzz",
-        collision_mask = {},
-        layer = 255,
-        decorative_removal_probability = 1,
-        variants = {
-            main = {
-                {
-                    picture = "__Moms_Spaghetti__/graphics/allowed_tile.png",
-                    count = 1,
-                    size = 1
-                }
-            },
-            empty_transitions = true
-        },
-        map_color = {r=255, g=255, b=255},
-        pollution_absorption_per_second = 0
-    },
-    {
-        name = "MomsSpaghetti_chunk_chooser",
-        type = "simple-entity-with-force",
-        icon = "__Moms_Spaghetti__/graphics/allowed_tile.png",
-        icon_size = 32,
-        flags = {"not-rotatable"},
-        collision_box = {{-0.5, -0.5}, {0.5, 0.5}},
-        pictures = {
-            {
-                filename = "__Moms_Spaghetti__/graphics/allowed_tile.png",
-                width = 32,
-                height = 32,
-            }
-        }
-    },
-    {
-        name = "MomsSpaghetti_chunk_chooser",
-        type = "item",
-        order = "zzz",
-        icon = "__Moms_Spaghetti__/graphics/allowed_tile.png",
-        icon_size = 32,
-        stack_size = 500,
-        place_result = "MomsSpaghetti_chunk_chooser"
-    }
-})
+require("prototypes/chunk_selector")
+require("prototypes/tiles")

@@ -8,15 +8,21 @@ script.on_event(defines.events.on_built_entity, function(event)
     local entityName = entity.name
 
     Logger.debug("Event for entity: " .. entityName)
-    if entityName == "MomsSpaghetti_chunk_chooser" then
-        Logger.info("Chunk chooser event")
-        local converted = Area_Management.convert_chunk(entity.position)
-        if not converted then
-            Logger.info("Refunding item because the chunk conversion failed")
-            local player = game.get_player(event.player_index)
-            player.insert{name = "MomsSpaghetti_chunk_chooser", count = 1}
+    if entityName == "MomsSpaghetti_chunk_selector" then
+        local player = game.get_player(event.player_index)
+        if player and player.valid then
+            Logger.info("Chunk chooser event for " .. player.name)
+            Area_Management.convert_chunk(entity.position)
+            entity.destroy()
+
+            -- Put the selector item back
+            local cursorStack = player.cursor_stack
+            if cursorStack and cursorStack.valid then
+                if not cursorStack.valid_for_read or cursorStack.name == "MomsSpaghetti_chunk_selector" then
+                    player.cursor_stack.set_stack{name = "MomsSpaghetti_chunk_selector", count = 1}
+                end
+            end
         end
-        entity.destroy()
     else
         -- TODO - other entity, do the math stuff
     end
