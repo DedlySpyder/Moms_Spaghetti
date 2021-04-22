@@ -1,6 +1,4 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "Moms_Spaghetti", prefix = "Tiles-2"}
---TODO - how to handle buildable tiles?
--- use a 2nd collision mask just for them? they can't collide with non this mod tiles, but can collide with mod tiles
 
 local Config = require("__Moms_Spaghetti__/scripts/config")
 

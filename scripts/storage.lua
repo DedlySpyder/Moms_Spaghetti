@@ -60,16 +60,16 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
         local oldChunkData = global[surfaceName][chunkPositionString]
         if oldChunkData then
             Storage.Chunks._LOGGER.debug("Chunk " .. surfaceName .. " - " .. chunkPositionString .. " has been claimed")
-            return true
+            return oldChunkData
         else
             Storage.Chunks._LOGGER.debug("Chunk " .. surfaceName .. " - " .. chunkPositionString .. " is not claimed")
-            return false
+            return nil
         end
     end
     Storage.Chunks._LOGGER.debug("No owner found for chunk ".. surfaceName .. " - " .. chunkPositionString)
 end
 
-function Storage.Chunks.get_chunk_from_position(surface, position)
+function Storage.Chunks.get_chunk_from_position(surface, position) --TODO cache lookups for just this tick?
     Storage.Chunks._LOGGER.debug("Getting chunk from position")
     return Storage.Chunks.get_chunk(surface, AREA.get_chunk_position_from_position(position))
 end

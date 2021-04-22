@@ -3,12 +3,11 @@ local Area = require("__DedLib__/modules/area")
 
 local Storage = require("storage")
 local Config = require("config")
+local Util = require("util")
 
 local Area_Management = {}
 
-function Area_Management.convert_chunk(position) -- TODO needs surface?
-    local surface = game.surfaces["nauvis"]
-
+function Area_Management.convert_chunk(surface, position)
     Logger.debug("Attempting to convert chunk")
     position = Area.standardize_position(position)
     local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
@@ -34,29 +33,39 @@ function Area_Management.convert_chunk(position) -- TODO needs surface?
         yDelta = -1
     end
 
-    local invalidTiles = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
-    Logger.debug("Found " .. #invalidTiles .. " invalid tiles for conversion")
-    local tileFilter = {}
-    for _, tile in ipairs(invalidTiles) do
-        local pos = tile.position
-        tileFilter[pos.x .. "-" .. pos.y] = true
-    end
-
+    local currentTiles = surface.find_tiles_filtered{area = area}
     local tiles = {}
-    for x = area.left_top.x, area.right_bottom.x - 1, xDelta do
-        for y = area.left_top.y, area.right_bottom.y - 1, yDelta do
-            if not tileFilter[x .. "-" .. y] then
-                table.insert(tiles, {name = Config.Prototypes.ALLOWED_TILE, position = {x, y}})
-            end
+    for _, tile in ipairs(currentTiles) do
+        if string.sub(tile.name, 1, #Config.Prototypes.DENIED_TILE_PREFIX) == Config.Prototypes.DENIED_TILE_PREFIX then
+            table.insert(tiles, {name = Util.invert_name_prefix(tile.name), position = tile.position})
+        elseif not tile.collides_with("water-tile") then
+            table.insert(tiles, {name = Config.Prototypes.ALLOWED_TILE, position = tile.position})
         end
     end
 
     Logger.debug("Converting " .. #tiles .. " tiles to allowed placement tiles")
-    --Logger.trace(tiles)
+    Logger.trace(tiles)
 
     surface.set_tiles(tiles)
     Storage.Chunks.add_chunk_from_position(surface, position)
     return true
+end
+
+function Area_Management.replace_tile(surface, tiles, tileName)
+    Logger.debug("Replacing " .. #tiles .. " tiles")
+    local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
+    local deniedTileName = Config.Prototypes.DENIED_TILE_PREFIX .. tileName
+
+    for _, tile in ipairs(tiles) do
+        if Storage.Chunks.get_chunk_from_position(surface, tile.position) then
+            tile["name"] = allowedTileName
+        else
+            tile["name"] = deniedTileName
+        end
+    end
+
+    Logger.trace(tiles)
+    surface.set_tiles(tiles)
 end
 
 return Area_Management

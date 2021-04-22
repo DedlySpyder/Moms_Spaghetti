@@ -13,7 +13,7 @@ script.on_event(defines.events.on_built_entity, function(event)
         local player = game.get_player(event.player_index)
         if player and player.valid then
             Logger.info("Chunk chooser event for " .. player.name)
-            Area_Management.convert_chunk(entity.position)
+            Area_Management.convert_chunk(entity.surface, entity.position)
             entity.destroy()
 
             -- Put the selector item back
@@ -29,15 +29,57 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 end)
 
+function on_built_tile(event)
+    local surface = game.get_surface(event.surface_index)
+    local tiles = event.tiles
+    local tile = event.tile
+    local tileName = tile.name
+
+    Logger.debug("Tile built event for " .. #tiles .. " tiles to " .. tileName)
+    Logger.trace(tiles)
+    if tile.mineable_properties.minable and string.sub(tileName, 1, #Config.MOD_PREFIX) ~= Config.MOD_PREFIX then
+        -- Mod tiles should not be buildable outright, but just in case...
+        Logger.info("Minable non-mod tiles built, replacing...")
+        Area_Management.replace_tile(surface, tiles, tileName)
+    else
+        Logger.debug("Tile is either not minable or is a mod tile")
+    end
+end
+script.on_event(defines.events.on_player_built_tile, on_built_tile)
+script.on_event(defines.events.on_robot_built_tile, on_built_tile)
+
+function on_script_raised_set_tiles(event)
+    local setTiles = event.tiles
+    Logger.debug("Script raised set tiles event for " .. #setTiles .. " tiles")
+    Logger.trace(setTiles)
+
+    local groupedTiles = {}
+    for _, tile in ipairs(setTiles) do
+        local name = tile.name
+        if not groupedTiles[name] then
+            groupedTiles[name] = {}
+        end
+        table.insert(groupedTiles[name], tile)
+    end
+
+    Logger.trace("Tiles have been grouped:")
+    Logger.trace(groupedTiles)
+
+    local validPrototypes = game.get_filtered_tile_prototypes({{filter = "minable"}})
+    for groupName, tiles in pairs(groupedTiles) do
+        local prototype = validPrototypes[groupName]
+        if prototype then
+            Logger.debug("Triggering normal built tiles event to tile " .. groupName)
+            on_built_tile{surface_index = event.surface_index, tiles = tiles, tile = prototype}
+        else
+            Logger.debug("Skipping past non minable tile: " .. groupName)
+        end
+    end
+end
+script.on_event(defines.events.script_raised_set_tiles, on_script_raised_set_tiles)
+
+
 --[[
-limit placement to allowed chunks
-first entity in this list sets the force's area
---- can I use collision masks to handle allowed placement???
----- [SCRATCH THIS] duplicate all tiles, and the new ones DON'T have a new mask that all specific entities (since I need to swap to these new ones)
----- alien biomes says the game maxs at 255 tiles, so make 1 tile that only collides with my layer and place it everywhere on generation?
-- https://wiki.factorio.com/Types/CollisionMask
-
-
 every time something is placed/removed it adds/removes from the cost of the chunks/total area
 -- unlocks more chunks unlocks (UI) when it is X% full
 -- need to remove chunks if they are less than X% to avoid abuse (down to min?)
@@ -51,13 +93,15 @@ split train stations to a specific one that allows unloading only, only allowed 
 --[[
 Needed features:
 - chunk math of placement
-- change out item for allowed tiles to a tool?
-    -- artillery-targeting-remote
 - support placeable tiles
-    - Need to duplicate the tile and have 1 allowed and 1 not allowed, interrupt the placement to switch if in an allowed chunk
-    - need to smarted up the convert chunks as well for it
+    - DONE - Need to duplicate the tile and have 1 allowed and 1 not allowed, interrupt the placement to switch if in an allowed chunk
+    - DONE - need to smarted up the convert chunks as well for it
+    - TODO - need to test the dynamic selection of layers with a dummy mod
 - train station split
 
 Future:
+- make tile look less shit
+    - same for icons for plates
+- add border to mineable tiles? (can I layer something on the border?)
 - support multiple forces?
 ]]--
