@@ -1,6 +1,8 @@
+local Config = require("__Moms_Spaghetti__/scripts/config")
+
 data:extend({
     {
-        name = "MomsSpaghetti_allowed_tile",
+        name = Config.Prototypes.ALLOWED_TILE,
         type = "tile",
         order = "zzz",
         collision_mask = {},

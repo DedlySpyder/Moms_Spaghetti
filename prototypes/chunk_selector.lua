@@ -1,17 +1,19 @@
+local Config = require("__Moms_Spaghetti__/scripts/config")
+
 data:extend({
     {
         type = "item",
-        name = "MomsSpaghetti_chunk_selector",
+        name = Config.Prototypes.CHUNK_SELECTOR,
         order = "zzz",
         icon = "__Moms_Spaghetti__/graphics/allowed_tile.png", --TODO - plate icon
         icon_size = 32,
         flags = {"hidden", "hide-from-bonus-gui", "only-in-cursor", "not-stackable", "spawnable"},
         stack_size = 1,
-        place_result = "MomsSpaghetti_chunk_selector"
+        place_result = Config.Prototypes.CHUNK_SELECTOR
     },
     {
         type = "simple-entity",
-        name = "MomsSpaghetti_chunk_selector",
+        name = Config.Prototypes.CHUNK_SELECTOR,
         icon = "__Moms_Spaghetti__/graphics/allowed_tile.png", --TODO - plate icon
         icon_size = 32,
         flags = {"not-rotatable", "placeable-player", "player-creation", "not-upgradable"},
@@ -24,10 +26,10 @@ data:extend({
     },
     {
         type = "shortcut", -- TODO swap something out when the player is spawned for this?
-        name = "MomsSpaghetti_chunk_selector",
+        name = Config.Prototypes.CHUNK_SELECTOR,
         order = "aa",
         action = "spawn-item",
-        item_to_spawn = "MomsSpaghetti_chunk_selector",
+        item_to_spawn = Config.Prototypes.CHUNK_SELECTOR,
         icon = {
             filename = "__Moms_Spaghetti__/graphics/allowed_tile.png", --TODO - plate icon
             size = 32
@@ -39,9 +41,9 @@ data:extend({
     },
     {
         type = "custom-input",
-        name = "MomsSpaghetti_chunk_selector",
+        name = Config.Prototypes.CHUNK_SELECTOR,
         key_sequence = "CONTROL + S",
         action = "spawn-item",
-        item_to_spawn = "MomsSpaghetti_chunk_selector"
+        item_to_spawn = Config.Prototypes.CHUNK_SELECTOR
     }
 })

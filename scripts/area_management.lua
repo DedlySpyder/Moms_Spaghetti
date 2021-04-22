@@ -2,16 +2,9 @@ local Logger = require("__DedLib__/modules/logger").create("Area Management")
 local Area = require("__DedLib__/modules/area")
 
 local Storage = require("storage")
+local Config = require("config")
 
 local Area_Management = {}
-
-Area_Management.CHUNKS = {} -- TODO - make global
-
-Area_Management.ALLOWED_TILE_NAME = "MomsSpaghetti_allowed_tile"
-
-function Area_Management.add_chunk(position)
-    table.insert(Area_Management.CHUNKS, Area.get_chunk_position_from_position(position))
-end
 
 function Area_Management.convert_chunk(position) -- TODO needs surface?
     local surface = game.surfaces["nauvis"]
@@ -53,7 +46,7 @@ function Area_Management.convert_chunk(position) -- TODO needs surface?
     for x = area.left_top.x, area.right_bottom.x - 1, xDelta do
         for y = area.left_top.y, area.right_bottom.y - 1, yDelta do
             if not tileFilter[x .. "-" .. y] then
-                table.insert(tiles, {name = Area_Management.ALLOWED_TILE_NAME, position = {x, y}})
+                table.insert(tiles, {name = Config.Prototypes.ALLOWED_TILE, position = {x, y}})
             end
         end
     end

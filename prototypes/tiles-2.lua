@@ -2,6 +2,8 @@ local Logger = require("__DedLib__/modules/logger").create{modName = "Moms_Spagh
 --TODO - how to handle buildable tiles?
 -- use a 2nd collision mask just for them? they can't collide with non this mod tiles, but can collide with mod tiles
 
+local Config = require("__Moms_Spaghetti__/scripts/config")
+
 local REQUIRED_COLLISION_MASKS = 1
 
 local masks = {}
@@ -53,7 +55,7 @@ local LAYER_ONE = chosenMasks[1]
 
 local newPrototypes = {}
 for name, tile in pairs(data.raw["tile"]) do
-    if name ~= "MomsSpaghetti_allowed_tile" then
+    if name ~= Config.Prototypes.ALLOWED_TILE then
         Logger.debug("Modifying tile: " .. name)
         if not tile.collision_mask then
             tile.collision_mask = {}
@@ -62,15 +64,15 @@ for name, tile in pairs(data.raw["tile"]) do
         if tile.minable then
             Logger.debug("Tile is minable, so creating a duplicates to swap to")
             local allowedTile = table.deepcopy(tile)
-            allowedTile.name = "MomsSpaghetti_allowed_tile_" .. tile.name
-            allowedTile.localised_name =  {"MomsSpaghetti_x_allowed", {"tile-name." .. tile.name}}
+            allowedTile.name = Config.Prototypes.ALLOWED_TILE_PREFIX .. tile.name
+            allowedTile.localised_name =  {"MomsSpaghetti_X_allowed", {"tile-name." .. tile.name}}
             allowedTile.localised_description =  {"tile-description." .. tile.name}
             allowedTile.collision_mask = {}
             allowedTile.map_color = {r=255, g=255, b=255}
             table.insert(newPrototypes, allowedTile)
 
             local deniedTile = table.deepcopy(tile)
-            deniedTile.name = "MomsSpaghetti_denied_tile_" .. deniedTile.name
+            deniedTile.name = Config.Prototypes.DENIED_TILE_PREFIX .. deniedTile.name
             deniedTile.localised_name = {"MomsSpaghetti_X_denied", {"tile-name." .. tile.name}}
             deniedTile.localised_description =  {"tile-description." .. tile.name}
             table.insert(deniedTile.collision_mask, LAYER_ONE)

@@ -1,14 +1,15 @@
 -- TODO - info description
-local Logger = require("__DedLib__/modules/logger").create("control")
+local Logger = require("__DedLib__/modules/logger").create("Control")
 
 local Area_Management = require("scripts/area_management")
+local Config = require("scripts/config")
 
 script.on_event(defines.events.on_built_entity, function(event)
     local entity = event.created_entity
     local entityName = entity.name
 
-    Logger.debug("Event for entity: " .. entityName)
-    if entityName == "MomsSpaghetti_chunk_selector" then
+    Logger.debug("Player built event for entity: " .. entityName)
+    if entityName == Config.Prototypes.CHUNK_SELECTOR then
         local player = game.get_player(event.player_index)
         if player and player.valid then
             Logger.info("Chunk chooser event for " .. player.name)
@@ -18,8 +19,8 @@ script.on_event(defines.events.on_built_entity, function(event)
             -- Put the selector item back
             local cursorStack = player.cursor_stack
             if cursorStack and cursorStack.valid then
-                if not cursorStack.valid_for_read or cursorStack.name == "MomsSpaghetti_chunk_selector" then
-                    player.cursor_stack.set_stack{name = "MomsSpaghetti_chunk_selector", count = 1}
+                if not cursorStack.valid_for_read or cursorStack.name == Config.Prototypes.CHUNK_SELECTOR then
+                    player.cursor_stack.set_stack{name = Config.Prototypes.CHUNK_SELECTOR, count = 1}
                 end
             end
         end
