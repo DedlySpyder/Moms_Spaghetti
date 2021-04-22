@@ -7,7 +7,7 @@ data:extend({
         order = "zzz",
         collision_mask = {},
         layer = 255,
-        decorative_removal_probability = 0.25,
+        decorative_removal_probability = 1,
         variants = {
             main = {
                 {
