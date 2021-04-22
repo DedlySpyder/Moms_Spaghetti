@@ -16,6 +16,20 @@ if #Config.Prototypes.ALLOWED_TILE_PREFIX ~= #Config.Prototypes.DENIED_TILE_PREF
     error("MOD BROKEN: I'm a doofus, please post this on the mod portal - Allowed and denied tile prefixes are not equal length")
 end
 
+Config.Prototypes.RESTRICTED_TYPES = {
+    "accumulator",
+    "assembling-machine",
+    "beacon",
+    "boiler",
+    "burner-generator",
+    "furnace",
+    "generator",
+    "lab",
+    "reactor",
+    "rocket-silo",
+    "solar-panel",
+}
+
 Logger.trace("Config values:")
 Logger.trace(Config, true)
 
