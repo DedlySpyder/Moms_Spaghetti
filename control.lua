@@ -4,6 +4,7 @@ local Logger = require("__DedLib__/modules/logger").create("Control")
 local Area_Management = require("scripts/area_management")
 local Config = require("scripts/config")
 
+-- Ghosts are added in here, so we don't care when the ghost is constructed, since it was already counted
 script.on_event(defines.events.on_built_entity, function(event)
     local entity = event.created_entity
     local entityName = entity.name
@@ -25,7 +26,7 @@ script.on_event(defines.events.on_built_entity, function(event)
             end
         end
     else
-        -- TODO - other entity, do the math stuff
+        Area_Management.add_entity(entity)
     end
 end)
 

@@ -76,4 +76,23 @@ function Storage.Chunks.get_chunk_from_position(surface, position) --TODO cache 
     return Storage.Chunks.get_chunk(surface, Area.get_chunk_position_from_position(position))
 end
 
+function Storage.Chunks.add_entity(entity)
+    if entity and entity.valid then
+        local entityName = entity.name
+        Storage.Chunks._LOGGER.debug("Attempting to add entity" .. entityName .. " to chunk")
+        local chunkData = Storage.Chunks.get_chunk_from_position(entity.surface, entity.position)
+        if not chunkData then
+            Storage.Chunks._LOGGER.error("Failed to add entity to chunk, chunk is not claimed")
+            return nil, false
+        end
+
+        local area = Area.area_of_entity(entity)
+        chunkData["fill"] = chunkData["fill"] + area
+
+        local percentage =  chunkData["fill"] / chunkData["max"]
+        Storage.Chunks._LOGGER.info("Added " .. entityName .. " to chunk. Percent filled: " .. percentage * 100 .. "%")
+        return percentage, true
+    end
+end
+
 return Storage

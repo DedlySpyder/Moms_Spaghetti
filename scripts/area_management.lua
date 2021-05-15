@@ -69,4 +69,17 @@ function Area_Management.replace_tile(surface, tiles, tileName)
     surface.set_tiles(tiles)
 end
 
+
+function Area_Management.add_entity(entity) -- TODO add in storage then refresh UI? (it will take from storage for the number available)
+    Logger.debug("Adding entity " .. entity.name)
+    local percentFull, added = Storage.Chunks.add_entity(entity)
+    if added then
+        Logger.debug("Entity was successfully added") -- TODO - see if player/force should get more chunks
+    end
+end
+
+function Area_Management.remove_entity(entity) --TODO - implement
+
+end
+
 return Area_Management
