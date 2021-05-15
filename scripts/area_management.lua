@@ -43,11 +43,12 @@ function Area_Management.convert_chunk(surface, position)
         end
     end
 
-    Logger.debug("Converting " .. #tiles .. " tiles to allowed placement tiles")
+    local tileCount = #tiles
+    Logger.debug("Converting " .. tileCount .. " tiles to allowed placement tiles")
     Logger.trace(tiles)
 
     surface.set_tiles(tiles)
-    Storage.Chunks.add_chunk_from_position(surface, position)
+    Storage.Chunks.claim_chunk_from_position(surface, position, tileCount)
     return true
 end
 
