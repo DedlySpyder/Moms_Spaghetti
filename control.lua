@@ -3,9 +3,14 @@ local Logger = require("__DedLib__/modules/logger").create("Control")
 
 local Area_Management = require("scripts/area_management")
 local Config = require("scripts/config")
+local Storage = require("scripts/storage")
+
+script.on_init(function()
+    Storage.init()
+end)
 
 -- Ghosts are added in here, so we don't care when the ghost is constructed, since it was already counted
-script.on_event(defines.events.on_built_entity, function(event)
+script.on_event(defines.events.on_built_entity, function(event) -- TODO - on script as well
     local entity = event.created_entity
     local entityName = entity.name
 
@@ -30,7 +35,29 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 end)
 
-function on_built_tile(event)
+
+function on_entity_removed(event)
+    local entity = event.entity or event.ghost
+    Area_Management.remove_entity(entity)
+end
+
+function on_entity_died(event)
+    local entity = event.entity
+
+    -- If the force isn't making a ghost then this entity can be removed from the count
+    -- TODO - how to know when the ghosts timeout? They have a week, so not relevant?
+        -- Once a week recalculate all chunks? Lol
+    if entity.force.ghost_time_to_live == 0 then --TODO - performance -- this needs caching
+        on_entity_removed(event)
+    end
+end
+
+script.on_event(defines.events.on_player_mined_entity, on_entity_removed) -- TODO - this triggers on mining ore as well?
+script.on_event(defines.events.on_entity_died, on_entity_died)
+script.on_event(defines.events.on_pre_ghost_deconstructed, on_entity_removed)
+
+
+function on_built_tile(event) --TODO - when building landfill, need to add to max area & convert it (future feature: handle waterfill)
     local surface = game.get_surface(event.surface_index)
     local tiles = event.tiles
     local tile = event.tile
@@ -48,6 +75,8 @@ function on_built_tile(event)
 end
 script.on_event(defines.events.on_player_built_tile, on_built_tile)
 script.on_event(defines.events.on_robot_built_tile, on_built_tile)
+
+--TODO mined tile to replace allowed tile with default if mod tile
 
 function on_script_raised_set_tiles(event)
     local setTiles = event.tiles
@@ -98,11 +127,12 @@ Needed features:
     - DONE - Need to duplicate the tile and have 1 allowed and 1 not allowed, interrupt the placement to switch if in an allowed chunk
     - DONE - need to smarted up the convert chunks as well for it
     - TODO - need to test the dynamic selection of layers with a dummy mod
-- train station split
 
 Future:
+- un-claim chunks
 - make tile look less shit
     - same for icons for plates
 - add border to mineable tiles? (can I layer something on the border?)
 - support multiple forces?
+- train station split (this may be a future feature if needed)
 ]]--

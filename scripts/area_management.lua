@@ -33,6 +33,7 @@ function Area_Management.convert_chunk(surface, position)
         yDelta = -1
     end
 
+    -- TODO - this doesn't take into account entities that are already there (trees, ship, etc)
     local currentTiles = surface.find_tiles_filtered{area = area}
     local tiles = {}
     for _, tile in ipairs(currentTiles) do
@@ -78,8 +79,12 @@ function Area_Management.add_entity(entity) -- TODO add in storage then refresh 
     end
 end
 
-function Area_Management.remove_entity(entity) --TODO - implement
-
+function Area_Management.remove_entity(entity)
+    Logger.debug("Removing entity " .. entity.name)
+    local percentFull, added = Storage.Chunks.remove_entity(entity)
+    if added then
+        Logger.debug("Entity was successfully remove") -- TODO - see if player/force should get more chunks
+    end
 end
 
 return Area_Management
