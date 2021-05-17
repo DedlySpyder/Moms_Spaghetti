@@ -58,12 +58,18 @@ function Area_Management.convert_chunk(surface, position, player)
         end
     end
 
+    local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
+    local takenSpace = 0
+    for _, entity in ipairs(entities) do
+        takenSpace = takenSpace + Area.area_of_entity(entity)
+    end
+
     local tileCount = #tiles
     Logger.debug("Converting " .. tileCount .. " tiles to allowed placement tiles")
     Logger.trace(tiles)
 
     surface.set_tiles(tiles)
-    local claimed = Storage.Chunks.claim_chunk_from_position(surface, position, tileCount)
+    local claimed = Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, takenSpace)
 
     if claimed then
         Storage.ClaimableChunks.decrement()

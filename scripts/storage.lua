@@ -45,7 +45,7 @@ function Storage.Chunks._position_to_string(position)
     return serpent.line(position)
 end
 
-function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount)
+function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFill)
     Storage.Chunks._LOGGER.debug("Adding chunk")
     if not surface.valid then
         Storage.Chunks._LOGGER.error("Surface is invalid")
@@ -53,6 +53,7 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount)
     end
 
     if not tileCount then tileCount = 1024 end
+    if not currentFill then currentFill = 0 end
 
     local surfaceName = surface.name
     chunkPosition = Area.standardize_position(chunkPosition)
@@ -70,14 +71,14 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount)
         global.chunk_data[surfaceName] = {}
     end
 
-    Storage.Chunks._LOGGER.debug("Adding claim of chunk " .. surfaceName .. " - " .. chunkPositionString .. " - tiles " .. tileCount)
-    global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = 0, max = tileCount}
+    Storage.Chunks._LOGGER.debug("Adding claim of chunk " .. surfaceName .. " - " .. chunkPositionString .. " - tiles " .. tileCount .. " - fill " .. currentFill)
+    global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = currentFill, max = tileCount}
     return true
 end
 
-function Storage.Chunks.claim_chunk_from_position(surface, position, tileCount)
+function Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, currentFill)
     Storage.Chunks._LOGGER.debug("Adding chunk by position")
-    return Storage.Chunks.claim_chunk(surface, Area.get_chunk_position_from_position(position), tileCount)
+    return Storage.Chunks.claim_chunk(surface, Area.get_chunk_position_from_position(position), tileCount, currentFill)
 end
 
 function Storage.Chunks.get_chunk(surface, chunkPosition)

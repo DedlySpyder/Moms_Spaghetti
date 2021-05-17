@@ -4,7 +4,6 @@ Pre-0.0.1 stuff
 - when building landfill, need to add to max area & convert it to _mod_ tile
 - tests?
 - on change of percentage full chunk setting - need to recalculate the claimed chunks
-- Area management claim - the count doesn't uncount current entities (trees/things that aren't limited)
 
 
 
