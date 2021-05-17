@@ -4,15 +4,23 @@ local Area = require("__DedLib__/modules/area")
 local Storage = require("storage")
 local Config = require("config")
 local Util = require("util")
+local Gui = require("gui")
 
 local Area_Management = {}
 
-function Area_Management.convert_chunk(surface, position)
+function Area_Management.convert_chunk(surface, position, player)
     Logger.debug("Attempting to convert chunk")
+    local claimableChunks = Storage.ClaimableChunks.get()
+    if claimableChunks < 1 then
+        Logger.warn("Not enough chunks left to claim this one")
+        player.print({"MomsSpaghetti_warn_convert_chunk_failed_not_enough_claimable_chunks"})
+        return false
+    end
     position = Area.standardize_position(position)
     local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
     if oldChunkData then
         Logger.warn("Chunk " .. surface.name .. " " .. serpent.line(position) .. " has already been claimed")
+        player.print({"MomsSpaghetti_warn_convert_chunk_failed_already_claimed"})
         return false
     end
 
@@ -49,8 +57,13 @@ function Area_Management.convert_chunk(surface, position)
     Logger.trace(tiles)
 
     surface.set_tiles(tiles)
-    Storage.Chunks.claim_chunk_from_position(surface, position, tileCount)
-    return true
+    local claimed = Storage.Chunks.claim_chunk_from_position(surface, position, tileCount)
+
+    if claimed then
+        Storage.ClaimableChunks.decrement()
+        Gui.ClaimableChunkCounter.updateAll()
+        return true
+    end
 end
 
 function Area_Management.replace_tile(surface, tiles, tileName)
@@ -71,19 +84,23 @@ function Area_Management.replace_tile(surface, tiles, tileName)
 end
 
 
-function Area_Management.add_entity(entity) -- TODO add in storage then refresh UI? (it will take from storage for the number available)
+function Area_Management.add_entity(entity)
     Logger.debug("Adding entity " .. entity.name)
-    local percentFull, added = Storage.Chunks.add_entity(entity)
-    if added then
-        Logger.debug("Entity was successfully added") -- TODO - see if player/force should get more chunks
+    local thresholdCrossed, added = Storage.Chunks.add_entity(entity)
+    if added and thresholdCrossed then
+        Logger.info("Entity added crossed threshold upwards, so incrementing chunk count")
+        Storage.ClaimableChunks.increment()
+        Gui.ClaimableChunkCounter.updateAll()
     end
 end
 
 function Area_Management.remove_entity(entity)
     Logger.debug("Removing entity " .. entity.name)
-    local percentFull, added = Storage.Chunks.remove_entity(entity)
-    if added then
-        Logger.debug("Entity was successfully remove") -- TODO - see if player/force should get more chunks
+    local thresholdCrossed, added = Storage.Chunks.remove_entity(entity)
+    if added and thresholdCrossed then
+        Logger.info("Entity removed crossed threshold downwards, so decrementing chunk count")
+        Storage.ClaimableChunks.decrement()
+        Gui.ClaimableChunkCounter.updateAll()
     end
 end
 

@@ -30,6 +30,14 @@ Config.Prototypes.RESTRICTED_TYPES = {
     "solar-panel",
 }
 
+
+Config.Settings = {}
+
+if settings and settings.global then
+    Config.Settings.STARTING_ALLOWED_CHUNKS = settings.global[Config.MOD_PREFIX .. "_starting_allowed_chunks"].value
+    Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK = settings.global[Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk"].value / 100
+end
+
 Logger.trace("Config values:")
 Logger.trace(Config, true)
 

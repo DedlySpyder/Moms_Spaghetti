@@ -4,9 +4,11 @@ local Logger = require("__DedLib__/modules/logger").create("Control")
 local Area_Management = require("scripts/area_management")
 local Config = require("scripts/config")
 local Storage = require("scripts/storage")
+local Gui = require("scripts/gui")
 
 script.on_init(function()
     Storage.init()
+    Gui.ClaimableChunkCounter.drawAll()
 end)
 
 -- Ghosts are added in here, so we don't care when the ghost is constructed, since it was already counted
@@ -19,7 +21,7 @@ script.on_event(defines.events.on_built_entity, function(event) -- TODO - on scr
         local player = game.get_player(event.player_index)
         if player and player.valid then
             Logger.info("Chunk chooser event for " .. player.name)
-            Area_Management.convert_chunk(entity.surface, entity.position)
+            Area_Management.convert_chunk(entity.surface, entity.position, player)
             entity.destroy()
 
             -- Put the selector item back
@@ -107,6 +109,12 @@ function on_script_raised_set_tiles(event)
     end
 end
 script.on_event(defines.events.script_raised_set_tiles, on_script_raised_set_tiles)
+
+
+script.on_event(defines.events.on_player_created, function(event)
+    local player = game.get_player(event.player_index)
+    Gui.ClaimableChunkCounter.draw(player)
+end)
 
 
 --[[
