@@ -4,8 +4,8 @@ local LoggerLib = require("__DedLib__/modules/logger")
 local Storage = require("storage")
 local Config = require("config")
 
-local Gui = {}
 
+local Gui = {}
 
 Gui.ClaimableChunkCounter = {}
 Gui.ClaimableChunkCounter._LOGGER = LoggerLib.create("Gui/ClaimableChunkCounter")
@@ -18,8 +18,7 @@ function Gui.ClaimableChunkCounter.drawAll()
     Gui.ClaimableChunkCounter._LOGGER.debug("Done drawing chunk counter for all players")
 end
 
--- TODO - feature - color number based on status (1 = yellow, 0 = red)
-function Gui.ClaimableChunkCounter.draw(player) -- TODO - make sure this is good? Looks kinda smushed
+function Gui.ClaimableChunkCounter.draw(player)
     local playerName = player.name
     Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to draw chunk counter for " .. playerName)
     if not Gui.ClaimableChunkCounter.exists(player) then
@@ -51,7 +50,7 @@ function Gui.ClaimableChunkCounter.update(player)
     Gui.ClaimableChunkCounter._LOGGER.debug("Done updating chunk counter for " .. playerName)
 end
 
-function Gui.ClaimableChunkCounter.destroy(player) -- TODO - Unused, but that's fine?
+function Gui.ClaimableChunkCounter.destroy(player) -- Unused
     local playerName = player.name
     Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to destroy chunk counter for " .. playerName)
     if Gui.ClaimableChunkCounter.exists(player) then

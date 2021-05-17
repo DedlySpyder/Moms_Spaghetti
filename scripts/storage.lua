@@ -5,12 +5,14 @@ local Config = require("config")
 
 local Storage = {}
 
+
 function Storage.init()
     global.chunk_data = global.chunk_data or {} -- map of surfaceName -> map of chunk positions -> true
     global.claimable_chunks = global.claimable_chunks or Config.Settings.STARTING_ALLOWED_CHUNKS -- int of chunks that can be claimed
 end
 
 
+-- This is the number of chunks that can still be claimed, they only move in single increments/decrements at a time
 Storage.ClaimableChunks = {}
 Storage.ClaimableChunks._LOGGER = LoggerLib.create("Storage/ClaimableChunks")
 function Storage.ClaimableChunks.get()
@@ -36,6 +38,7 @@ function Storage.ClaimableChunks.decrement()
 end
 
 
+-- Storage of all of the chunks that have already been claimed
 Storage.Chunks = {}
 Storage.Chunks._LOGGER = LoggerLib.create("Storage/Chunks")
 function Storage.Chunks._position_to_string(position)
@@ -68,7 +71,7 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount)
     end
 
     Storage.Chunks._LOGGER.debug("Adding claim of chunk " .. surfaceName .. " - " .. chunkPositionString .. " - tiles " .. tileCount)
-    global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = 0, max = tileCount} -- TODO - doc on init?
+    global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = 0, max = tileCount}
     return true
 end
 
@@ -101,7 +104,7 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
     Storage.Chunks._LOGGER.debug("No owner found for chunk ".. surfaceName .. " - " .. chunkPositionString)
 end
 
-function Storage.Chunks.get_chunk_from_position(surface, position) --TODO cache lookups for just this tick?
+function Storage.Chunks.get_chunk_from_position(surface, position) --TODO - performance(?) - cache lookups for just this tick?
     Storage.Chunks._LOGGER.debug("Getting chunk from position")
     return Storage.Chunks.get_chunk(surface, Area.get_chunk_position_from_position(position))
 end

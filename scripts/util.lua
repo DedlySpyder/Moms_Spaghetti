@@ -4,6 +4,9 @@ local Config = require("config")
 
 local Util = {}
 
+-- Accepts an allowed or denied tile name and returns the opposite of the pair
+--  An allowed name returns denied or denied name returns allowed
+--  This assumes that the allowed and denied prefix is the same length (a check in config hard fails when this is not the case)
 function Util.invert_name_prefix(name)
     local prefixLength = #Config.Prototypes.ALLOWED_TILE_PREFIX
     local oldPrefix = string.sub(name, 1, prefixLength)

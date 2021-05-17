@@ -11,7 +11,7 @@ data:extend({
 		order = "000"
 	},
 	{
-		name = Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk", -- TODO - when this changes, need to recalculate the claimed chunks
+		name = Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk",
 		type = "double-setting",
 		setting_type = "runtime-global",
 		default_value = 75,

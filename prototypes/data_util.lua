@@ -42,7 +42,7 @@ if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
     end
 
     -- Last ditch effort, get something at least
-    -- TODO - FUTURE - choosing busy masks - this is good for at least a while
+    -- TODO - compatibility - choosing busy masks - this is good for at least a while
     if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
         Logger.fatal("Failed to find free layers for Mom'S Spaghetti mod. Picking hardcoded layer instead")
         table.insert(chosenMasks, "layer-49")

@@ -1,0 +1,24 @@
+Pre-0.0.1 stuff
+- Docs/commenting
+- info description
+- when building landfill, need to add to max area & convert it to _mod_ tile
+- tests?
+- on change of percentage full chunk setting - need to recalculate the claimed chunks
+- Area management claim - the count doesn't uncount current entities (trees/things that aren't limited)
+
+
+
+Future stuff
+- on script built, if it's not overlapping something else then I'll need to count it
+- Ghost timeout? it's a week in game, so irrelevant I guess?
+- on_player_mined_entity - triggers on mining ore, I can filter that out with event filters
+- mod compat - waterfill?
+- mod compat - need to test the dynamic selection of layers with a dummy mod
+- force unloading train station to allowed tiles?
+- feature - surface support - count/claim by surface
+- feature - unclaim chunks
+- feature - force support
+- "feature" - actual sprites,icons?
+            - add border to mineable tiles? (can I layer something on the border?)
+- feature - color claimable count (1 = yellow, 0 or less = red)
+- change out allow shortcut for a top left button near the label -> shortcuts are just annoying to work with

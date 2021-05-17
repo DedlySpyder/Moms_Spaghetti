@@ -6,8 +6,15 @@ local Config = require("config")
 local Util = require("util")
 local Gui = require("gui")
 
+--[[
+Handle all the management of the claimed chunks
+
+These chunks are the only spot where normal base entities (furnaces/assembling machines, etc) can be placed. When each
+chunk is  above a certain percentage full, then a new chunk can be claimed.
+]]--
 local Area_Management = {}
 
+-- Claim a whole chunk and convert the current tiles to allowed tiles
 function Area_Management.convert_chunk(surface, position, player)
     Logger.debug("Attempting to convert chunk")
     local claimableChunks = Storage.ClaimableChunks.get()
@@ -41,7 +48,6 @@ function Area_Management.convert_chunk(surface, position, player)
         yDelta = -1
     end
 
-    -- TODO - this doesn't take into account entities that are already there (trees, ship, etc)
     local currentTiles = surface.find_tiles_filtered{area = area}
     local tiles = {}
     for _, tile in ipairs(currentTiles) do
@@ -66,6 +72,8 @@ function Area_Management.convert_chunk(surface, position, player)
     end
 end
 
+-- Replace tiles that are placeable by players
+-- There are either allowed or denied versions of all of these, and each one is checked to see which version is needed
 function Area_Management.replace_tile(surface, tiles, tileName)
     Logger.debug("Replacing " .. #tiles .. " tiles")
     local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
@@ -84,6 +92,8 @@ function Area_Management.replace_tile(surface, tiles, tileName)
 end
 
 
+-- Add/remove an entity from a chunk. Storage will handle the exact logic on if the chunk is being tracked and if we
+-- should change the chunks remaining to claim count
 function Area_Management.add_entity(entity)
     Logger.debug("Adding entity " .. entity.name)
     local thresholdCrossed, added = Storage.Chunks.add_entity(entity)
