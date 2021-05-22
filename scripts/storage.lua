@@ -19,14 +19,14 @@ Storage.ClaimableChunks = {}
 Storage.ClaimableChunks._LOGGER = LoggerLib.create("Storage/ClaimableChunks")
 function Storage.ClaimableChunks.get()
     local num = global.claimable_chunks
-    Storage.ClaimableChunks._LOGGER.debug("Current claimable chunks: " .. num)
+    Storage.ClaimableChunks._LOGGER.debug("Current claimable chunks: %d", num)
     return num
 end
 
 function Storage.ClaimableChunks.increment()
     local newNum = Storage.ClaimableChunks.get() + 1
 
-    Storage.ClaimableChunks._LOGGER.debug("Incrementing current claimable chunks to " .. newNum)
+    Storage.ClaimableChunks._LOGGER.debug("Incrementing current claimable chunks to %d", newNum)
     global.claimable_chunks = newNum
     return newNum
 end
@@ -34,7 +34,7 @@ end
 function Storage.ClaimableChunks.decrement()
     local newNum = Storage.ClaimableChunks.get() - 1
 
-    Storage.ClaimableChunks._LOGGER.debug("Decrementing current claimable chunks to " .. newNum)
+    Storage.ClaimableChunks._LOGGER.debug("Decrementing current claimable chunks to %d", newNum)
     global.claimable_chunks = newNum
     return newNum
 end
@@ -64,16 +64,21 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFi
     -- Make sure it's not currently owned
     local oldChunkData = Storage.Chunks.get_chunk(surface, chunkPosition)
     if oldChunkData then
-        Storage.Chunks._LOGGER.warn("Chunk " .. surfaceName .. " - " .. chunkPositionString .. " is already added")
+        Storage.Chunks._LOGGER.warn("Chunk %s - %s is already added", surfaceName, chunkPositionString)
         return false
     end
 
     if not global.chunk_data[surfaceName] then
-        Storage.Chunks._LOGGER.debug("Adding surface to global chunk table: " .. surfaceName)
+        Storage.Chunks._LOGGER.debug("Adding surface to global chunk table: %s", surfaceName)
         global.chunk_data[surfaceName] = {}
     end
 
-    Storage.Chunks._LOGGER.debug("Adding claim of chunk " .. surfaceName .. " - " .. chunkPositionString .. " - tiles " .. tileCount .. " - fill " .. currentFill)
+    Storage.Chunks._LOGGER.debug("Adding claim of chunk %s - %s -- %d tiles - %d fill",
+            surfaceName,
+            chunkPositionString,
+            tileCount,
+            currentFill
+    )
     global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = currentFill, max = tileCount}
     return true
 end
@@ -97,14 +102,14 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
     if global.chunk_data[surfaceName] then
         local oldChunkData = global.chunk_data[surfaceName][chunkPositionString]
         if oldChunkData then
-            Storage.Chunks._LOGGER.debug("Chunk " .. surfaceName .. " - " .. chunkPositionString .. " has been claimed")
+            Storage.Chunks._LOGGER.debug("Chunk %s - %s has been claimed", surfaceName, chunkPositionString)
             return oldChunkData
         else
-            Storage.Chunks._LOGGER.debug("Chunk " .. surfaceName .. " - " .. chunkPositionString .. " is not claimed")
+            Storage.Chunks._LOGGER.debug("Chunk %s - %s is not claimed", surfaceName, chunkPositionString)
             return nil
         end
     end
-    Storage.Chunks._LOGGER.debug("No owner found for chunk ".. surfaceName .. " - " .. chunkPositionString)
+    Storage.Chunks._LOGGER.debug("No owner found for chunk %s - %s", surfaceName, chunkPositionString)
 end
 
 function Storage.Chunks.get_chunk_from_position(surface, position) --TODO - performance(?) - cache lookups for just this tick?
@@ -116,13 +121,25 @@ end
 function Storage.Chunks._crossed_fill_threshold(oldPercentage, newPercentage)
     local threshold = Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK
     if oldPercentage < threshold and threshold <= newPercentage then
-        Storage.Chunks._LOGGER.debug("Crossed fill threshold upwards (old, new, threshold): (" .. oldPercentage .. "," .. newPercentage .. "," .. threshold .. ")")
+        Storage.Chunks._LOGGER.debug("Crossed fill threshold upwards (old, new, threshold): (%d, %d, %d)",
+                oldPercentage,
+                newPercentage,
+                threshold
+        )
         return 1
     elseif oldPercentage >= threshold and threshold > newPercentage then
-        Storage.Chunks._LOGGER.debug("Crossed fill threshold downwards (old, new, threshold): (" .. oldPercentage .. "," .. newPercentage .. "," .. threshold .. ")")
+        Storage.Chunks._LOGGER.debug("Crossed fill threshold downwards (old, new, threshold): (%d, %d, %d)",
+                oldPercentage,
+                newPercentage,
+                threshold
+        )
         return -1
     else
-        Storage.Chunks._LOGGER.debug("Did not cross fill threshold (old, new, threshold): (" .. oldPercentage .. "," .. newPercentage .. "," .. threshold .. ")")
+        Storage.Chunks._LOGGER.debug("Did not cross fill threshold (old, new, threshold): (%d, %d, %d)",
+                oldPercentage,
+                newPercentage,
+                threshold
+        )
         return 0
     end
 end
@@ -135,10 +152,10 @@ function Storage.Chunks._modify_entity(entity, thresholdDirection, newFillFunc)
 
     if entity and entity.valid then
         local entityName = entity.name
-        Storage.Chunks._LOGGER.debug("Attempting to " .. directionName .. " entity" .. entityName .. " to chunk")
+        Storage.Chunks._LOGGER.debug("Attempting to %s entity %s to chunk", directionName, entityName)
         local chunkData = Storage.Chunks.get_chunk_from_position(entity.surface, entity.position)
         if not chunkData then
-            Storage.Chunks._LOGGER.error("Failed to " .. directionName .. " " .. entityName .. " to chunk, chunk is not claimed")
+            Storage.Chunks._LOGGER.error("Failed to %s %s to chunk, chunk is not claimed", directionName, entityName)
             return nil, false
         end
 
@@ -153,7 +170,7 @@ function Storage.Chunks._modify_entity(entity, thresholdDirection, newFillFunc)
 
         local crossedThreshold = Storage.Chunks._crossed_fill_threshold(oldPercentage, percentage)
 
-        Storage.Chunks._LOGGER.info("Successfully modified " .. entityName .. " to chunk. New percent filled: " .. percentage * 100 .. "%")
+        Storage.Chunks._LOGGER.info("Successfully modified %s to chunk. New percent filled: %.2f%%", entityName, percentage * 100)
         return crossedThreshold == thresholdDirection, true
     end
 end

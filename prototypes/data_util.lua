@@ -17,8 +17,7 @@ for category, prototypes in pairs(data.raw) do
     end
 end
 
-Logger.trace("All masks:")
-Logger.trace(masks, true)
+Logger.trace_block("All masks: %s", masks)
 local chosenMasks = {}
 local numberMasks = {}
 for i=55,13,-1 do
@@ -29,8 +28,7 @@ for i=55,13,-1 do
         table.insert(chosenMasks, layer)
     end
 end
-Logger.trace("All numbered masks:")
-Logger.trace(numberMasks, true)
+Logger.trace_block("All numbered masks: %s", numberMasks)
 
 -- Make sure we have enough masks
 if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
@@ -49,8 +47,7 @@ if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
     end
 end
 
-Logger.debug("Chosen mask(s):")
-Logger.debug(chosenMasks, true)
+Logger.debug_block("Chosen mask(s): %s", chosenMasks)
 Data_Util.CHOSEN_MASKS = chosenMasks
 
 return Data_Util

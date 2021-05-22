@@ -28,12 +28,12 @@ function Area_Management.convert_chunk(surface, position, player)
     position = Position.standardize(position)
     local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
     if oldChunkData then
-        Logger.warn("Chunk " .. surface.name .. " " .. serpent.line(position) .. " has already been claimed")
+        Logger.warn("Chunk %s on surface %s has already been claimed", position, surface.name)
         player.print({"MomsSpaghetti_warn_convert_chunk_failed_already_claimed"})
         return false
     end
 
-    Logger.debug("Converting chunk at position: " .. serpent.line(position))
+    Logger.debug("Converting chunk at position: %s", position)
     local area = Area.get_chunk_area_from_position(position)
 
     local xDelta
@@ -67,7 +67,7 @@ function Area_Management.convert_chunk(surface, position, player)
     end
 
     local tileCount = #tiles
-    Logger.debug("Converting " .. tileCount .. " tiles to allowed placement tiles")
+    Logger.debug("Converting %d tiles to allowed placement tiles", tileCount)
     Logger.trace(tiles)
 
     surface.set_tiles(tiles)
@@ -83,7 +83,7 @@ end
 -- Replace tiles that are placeable by players
 -- There are either allowed or denied versions of all of these, and each one is checked to see which version is needed
 function Area_Management.replace_tile(surface, tiles, tileName)
-    Logger.debug("Replacing " .. #tiles .. " tiles")
+    Logger.debug("Replacing %d tiles", #tiles)
     local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
     local deniedTileName = Config.Prototypes.DENIED_TILE_PREFIX .. tileName
 
@@ -103,7 +103,7 @@ end
 -- Add/remove an entity from a chunk. Storage will handle the exact logic on if the chunk is being tracked and if we
 -- should change the chunks remaining to claim count
 function Area_Management.add_entity(entity)
-    Logger.debug("Adding entity " .. entity.name)
+    Logger.debug("Adding entity %s", entity.name)
     local thresholdCrossed, added = Storage.Chunks.add_entity(entity)
     if added and thresholdCrossed then
         Logger.info("Entity added crossed threshold upwards, so incrementing chunk count")
@@ -113,7 +113,7 @@ function Area_Management.add_entity(entity)
 end
 
 function Area_Management.remove_entity(entity)
-    Logger.debug("Removing entity " .. entity.name)
+    Logger.debug("Removing entity %s", entity.name)
     local thresholdCrossed, added = Storage.Chunks.remove_entity(entity)
     if added and thresholdCrossed then
         Logger.info("Entity removed crossed threshold downwards, so decrementing chunk count")

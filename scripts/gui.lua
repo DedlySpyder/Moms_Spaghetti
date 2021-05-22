@@ -20,16 +20,16 @@ end
 
 function Gui.ClaimableChunkCounter.draw(player)
     local playerName = player.name
-    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to draw chunk counter for " .. playerName)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to draw chunk counter for %s", playerName)
     if not Gui.ClaimableChunkCounter.exists(player) then
-        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter does not exist for " .. playerName .. ", drawing now...")
+        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter does not exist for %s, drawing now...", playerName)
         local buttonFrom = mod_gui.get_button_flow(player)
         buttonFrom.add{type="label", name=Gui.ClaimableChunkCounter._LABEL_NAME, caption={"MomsSpaghetti_gui_claimable_chunks_label", Storage.ClaimableChunks.get()}}
     else
-        Gui.ClaimableChunkCounter._LOGGER.warn("Chunk counter already exists for " .. playerName .. " updating instead")
+        Gui.ClaimableChunkCounter._LOGGER.warn("Chunk counter already exists for %s updating instead", playerName)
         Gui.ClaimableChunkCounter.update(player)
     end
-    Gui.ClaimableChunkCounter._LOGGER.debug("Done drawing chunk counter for " .. playerName)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Done drawing chunk counter for %s", playerName)
 end
 
 function Gui.ClaimableChunkCounter.updateAll()
@@ -42,24 +42,24 @@ end
 
 function Gui.ClaimableChunkCounter.update(player)
     local playerName = player.name
-    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to update chunk counter for " .. player.name)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to update chunk counter for %s", playerName)
     if Gui.ClaimableChunkCounter.exists(player) then
-        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter exists for " .. playerName .. ", updating now...")
+        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter exists for %s, updating now...", playerName)
         mod_gui.get_button_flow(player)[Gui.ClaimableChunkCounter._LABEL_NAME].caption = {"MomsSpaghetti_gui_claimable_chunks_label", Storage.ClaimableChunks.get()}
     end
-    Gui.ClaimableChunkCounter._LOGGER.debug("Done updating chunk counter for " .. playerName)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Done updating chunk counter for %s", playerName)
 end
 
 function Gui.ClaimableChunkCounter.destroy(player) -- Unused
     local playerName = player.name
-    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to destroy chunk counter for " .. playerName)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Attempting to destroy chunk counter for %s", playerName)
     if Gui.ClaimableChunkCounter.exists(player) then
-        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter exists for " .. playerName .. ", destroying now...")
+        Gui.ClaimableChunkCounter._LOGGER.info("Chunk counter exists for %s, destroying now...", playerName)
         mod_gui.get_button_flow(player)[Gui.ClaimableChunkCounter._LABEL_NAME].destroy()
     else
-        Gui.ClaimableChunkCounter._LOGGER.warn("Chunk counter does not exist for " .. playerName .. ", no-op")
+        Gui.ClaimableChunkCounter._LOGGER.warn("Chunk counter does not exist for %s, no-op", playerName)
     end
-    Gui.ClaimableChunkCounter._LOGGER.debug("Done destroying chunk counter for " .. playerName)
+    Gui.ClaimableChunkCounter._LOGGER.debug("Done destroying chunk counter for %s", playerName)
 end
 
 function Gui.ClaimableChunkCounter.exists(player)

@@ -38,7 +38,6 @@ if settings and settings.global then
     Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK = settings.global[Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk"].value / 100
 end
 
-Logger.trace("Config values:")
-Logger.trace(Config, true)
+Logger.trace_block("Config values: %s", Config)
 
 return Config

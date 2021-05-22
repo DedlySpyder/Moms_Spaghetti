@@ -8,7 +8,7 @@ local LAYER_ONE = Data_Util.CHOSEN_MASKS[1]
 local newPrototypes = {}
 for name, tile in pairs(data.raw["tile"]) do
     if name ~= Config.Prototypes.ALLOWED_TILE then
-        Logger.debug("Modifying tile: " .. name)
+        Logger.debug("Modifying tile: %s", name)
         if not tile.collision_mask then
             tile.collision_mask = {}
         end

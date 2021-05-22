@@ -15,11 +15,11 @@ script.on_event(defines.events.on_built_entity, function(event)
     local entity = event.created_entity
     local entityName = entity.name
 
-    Logger.debug("Player built event for entity: " .. entityName)
+    Logger.debug("Player built event for entity: %s", entityName)
     if entityName == Config.Prototypes.CHUNK_SELECTOR then
         local player = game.get_player(event.player_index)
         if player and player.valid then
-            Logger.info("Chunk chooser event for " .. player.name)
+            Logger.info("Chunk chooser event for %s", player.name)
             Area_Management.convert_chunk(entity.surface, entity.position, player)
             entity.destroy()
 
@@ -62,7 +62,7 @@ function on_built_tile(event)
     local tile = event.tile
     local tileName = tile.name
 
-    Logger.debug("Tile built event for " .. #tiles .. " tiles to " .. tileName)
+    Logger.debug("Tile built event for %d tiles to %s", #tiles, tileName)
     Logger.trace(tiles)
     if tile.mineable_properties.minable and string.sub(tileName, 1, #Config.MOD_PREFIX) ~= Config.MOD_PREFIX then
         -- Mod tiles should not be buildable outright, but just in case...
@@ -78,7 +78,7 @@ script.on_event(defines.events.on_robot_built_tile, on_built_tile)
 
 function on_script_raised_set_tiles(event)
     local setTiles = event.tiles
-    Logger.debug("Script raised set tiles event for " .. #setTiles .. " tiles")
+    Logger.debug("Script raised set tiles event for %d tiles", #setTiles)
     Logger.trace(setTiles)
 
     local groupedTiles = {}
@@ -90,17 +90,16 @@ function on_script_raised_set_tiles(event)
         table.insert(groupedTiles[name], tile)
     end
 
-    Logger.trace("Tiles have been grouped:")
-    Logger.trace(groupedTiles)
+    Logger.trace("Tiles have been grouped: %s", groupedTiles)
 
     local validPrototypes = game.get_filtered_tile_prototypes({{filter = "minable"}})
     for groupName, tiles in pairs(groupedTiles) do
         local prototype = validPrototypes[groupName]
         if prototype then
-            Logger.debug("Triggering normal built tiles event to tile " .. groupName)
+            Logger.debug("Triggering normal built tiles event to tile %s", groupName)
             on_built_tile{surface_index = event.surface_index, tiles = tiles, tile = prototype}
         else
-            Logger.debug("Skipping past non minable tile: " .. groupName)
+            Logger.debug("Skipping past non minable tile: %s", groupName)
         end
     end
 end
