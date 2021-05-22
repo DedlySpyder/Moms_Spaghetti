@@ -1,5 +1,7 @@
-local Area = require("__DedLib__/modules/area")
 local LoggerLib = require("__DedLib__/modules/logger")
+local Area = require("__DedLib__/modules/area")
+local Entity = require("__DedLib__/modules/entity")
+local Position = require("__DedLib__/modules/position")
 
 local Config = require("config")
 
@@ -56,7 +58,7 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFi
     if not currentFill then currentFill = 0 end
 
     local surfaceName = surface.name
-    chunkPosition = Area.standardize_position(chunkPosition)
+    chunkPosition = Position.standardize(chunkPosition)
     local chunkPositionString = Storage.Chunks._position_to_string(chunkPosition)
 
     -- Make sure it's not currently owned
@@ -89,7 +91,7 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
     end
 
     local surfaceName = surface.name
-    chunkPosition = Area.standardize_position(chunkPosition)
+    chunkPosition = Position.standardize(chunkPosition)
     local chunkPositionString = Storage.Chunks._position_to_string(chunkPosition)
 
     if global.chunk_data[surfaceName] then
@@ -143,7 +145,7 @@ function Storage.Chunks._modify_entity(entity, thresholdDirection, newFillFunc)
         local maxArea = chunkData["max"]
         local currentFill = chunkData["fill"]
         local oldPercentage = currentFill / maxArea
-        local area = Area.area_of_entity(entity)
+        local area = Entity.area_of(entity)
 
         local newFill = newFillFunc(currentFill, area, maxArea) --math.min(currentFill + area, maxArea)
         chunkData["fill"] = newFill

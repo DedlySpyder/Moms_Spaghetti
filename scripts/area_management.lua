@@ -1,5 +1,7 @@
 local Logger = require("__DedLib__/modules/logger").create("Area Management")
 local Area = require("__DedLib__/modules/area")
+local Entity = require("__DedLib__/modules/entity")
+local Position = require("__DedLib__/modules/position")
 
 local Storage = require("storage")
 local Config = require("config")
@@ -23,7 +25,7 @@ function Area_Management.convert_chunk(surface, position, player)
         player.print({"MomsSpaghetti_warn_convert_chunk_failed_not_enough_claimable_chunks"})
         return false
     end
-    position = Area.standardize_position(position)
+    position = Position.standardize(position)
     local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
     if oldChunkData then
         Logger.warn("Chunk " .. surface.name .. " " .. serpent.line(position) .. " has already been claimed")
@@ -61,7 +63,7 @@ function Area_Management.convert_chunk(surface, position, player)
     local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
     local takenSpace = 0
     for _, entity in ipairs(entities) do
-        takenSpace = takenSpace + Area.area_of_entity(entity)
+        takenSpace = takenSpace + Entity.area_of(entity)
     end
 
     local tileCount = #tiles
