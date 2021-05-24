@@ -26,7 +26,7 @@ function Area_Management.convert_chunk(surface, position, player)
         return false
     end
     position = Position.standardize(position)
-    local oldChunkData = Storage.Chunks.get_chunk_from_position(surface, position)
+    local oldChunkData, chunkPosition = Storage.Chunks.get_chunk_from_position(surface, position)
     if oldChunkData then
         Logger.warn("Chunk %s on surface %s has already been claimed", position, surface.name)
         player.print({"MomsSpaghetti_warn_convert_chunk_failed_already_claimed"})
@@ -63,7 +63,14 @@ function Area_Management.convert_chunk(surface, position, player)
     local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
     local takenSpace = 0
     for _, entity in ipairs(entities) do
-        takenSpace = takenSpace + Entity.area_of(entity)
+        local areas_by_chunks = Entity.area_of_by_chunks(entity)
+        for _, area_by_chunk in ipairs(areas_by_chunks) do
+            local chunk = area_by_chunk["chunk"]
+            if chunk.x == chunkPosition.x and chunk.y == chunkPosition.y then
+                takenSpace = takenSpace + area_by_chunk["area"]
+                break
+            end
+        end
     end
 
     local tileCount = #tiles
@@ -74,7 +81,7 @@ function Area_Management.convert_chunk(surface, position, player)
     local claimed = Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, takenSpace)
 
     if claimed then
-        Storage.ClaimableChunks.decrement()
+        Storage.ClaimableChunks.decrease()
         Gui.ClaimableChunkCounter.updateAll()
         return true
     end
@@ -104,20 +111,20 @@ end
 -- should change the chunks remaining to claim count
 function Area_Management.add_entity(entity)
     Logger.debug("Adding entity %s", entity.name)
-    local thresholdCrossed, added = Storage.Chunks.add_entity(entity)
-    if added and thresholdCrossed then
-        Logger.info("Entity added crossed threshold upwards, so incrementing chunk count")
-        Storage.ClaimableChunks.increment()
+    local thresholdsCrossed = Storage.Chunks.add_entity(entity)
+    if thresholdsCrossed > 0 then
+        Logger.info("Entity added crossed %d threshold(s) upwards, so incrementing chunk count", thresholdsCrossed)
+        Storage.ClaimableChunks.increase(thresholdsCrossed)
         Gui.ClaimableChunkCounter.updateAll()
     end
 end
 
 function Area_Management.remove_entity(entity)
     Logger.debug("Removing entity %s", entity.name)
-    local thresholdCrossed, added = Storage.Chunks.remove_entity(entity)
-    if added and thresholdCrossed then
-        Logger.info("Entity removed crossed threshold downwards, so decrementing chunk count")
-        Storage.ClaimableChunks.decrement()
+    local thresholdsCrossed = Storage.Chunks.remove_entity(entity)
+    if thresholdsCrossed > 0 then
+        Logger.info("Entity removed crossed %d threshold(s) downwards, so decrementing chunk count", thresholdsCrossed)
+        Storage.ClaimableChunks.decrease(thresholdsCrossed)
         Gui.ClaimableChunkCounter.updateAll()
     end
 end

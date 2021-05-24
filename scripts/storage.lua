@@ -23,18 +23,20 @@ function Storage.ClaimableChunks.get()
     return num
 end
 
-function Storage.ClaimableChunks.increment()
-    local newNum = Storage.ClaimableChunks.get() + 1
+function Storage.ClaimableChunks.increase(num)
+    if not num then num = 1 end
+    local newNum = Storage.ClaimableChunks.get() + num
 
-    Storage.ClaimableChunks._LOGGER.debug("Incrementing current claimable chunks to %d", newNum)
+    Storage.ClaimableChunks._LOGGER.debug("Increasing current claimable chunks by %d to %d", num,  newNum)
     global.claimable_chunks = newNum
     return newNum
 end
 
-function Storage.ClaimableChunks.decrement()
-    local newNum = Storage.ClaimableChunks.get() - 1
+function Storage.ClaimableChunks.decrease(num)
+    if not num then num = 1 end
+    local newNum = Storage.ClaimableChunks.get() - num
 
-    Storage.ClaimableChunks._LOGGER.debug("Decrementing current claimable chunks to %d", newNum)
+    Storage.ClaimableChunks._LOGGER.debug("Decrementing current claimable chunks by %d to %d", num, newNum)
     global.claimable_chunks = newNum
     return newNum
 end
@@ -79,13 +81,14 @@ function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFi
             tileCount,
             currentFill
     )
-    global.chunk_data[surfaceName][chunkPositionString] = {claimed = true, fill = currentFill, max = tileCount}
+    global.chunk_data[surfaceName][chunkPositionString] = {fill = currentFill, max = tileCount}
     return true
 end
 
 function Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, currentFill)
     Storage.Chunks._LOGGER.debug("Adding chunk by position")
-    return Storage.Chunks.claim_chunk(surface, Area.get_chunk_position_from_position(position), tileCount, currentFill)
+    local chunkPosition = Area.get_chunk_position_from_position(position)
+    return Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFill), chunkPosition
 end
 
 function Storage.Chunks.get_chunk(surface, chunkPosition)
@@ -114,7 +117,8 @@ end
 
 function Storage.Chunks.get_chunk_from_position(surface, position) --TODO - performance(?) - cache lookups for just this tick?
     Storage.Chunks._LOGGER.debug("Getting chunk from position")
-    return Storage.Chunks.get_chunk(surface, Area.get_chunk_position_from_position(position))
+    local chunkPosition = Area.get_chunk_position_from_position(position)
+    return Storage.Chunks.get_chunk(surface, chunkPosition), chunkPosition
 end
 
 
@@ -152,26 +156,43 @@ function Storage.Chunks._modify_entity(entity, thresholdDirection, newFillFunc)
 
     if entity and entity.valid then
         local entityName = entity.name
-        Storage.Chunks._LOGGER.debug("Attempting to %s entity %s to chunk", directionName, entityName)
-        local chunkData = Storage.Chunks.get_chunk_from_position(entity.surface, entity.position)
-        if not chunkData then
-            Storage.Chunks._LOGGER.error("Failed to %s %s to chunk, chunk is not claimed", directionName, entityName)
-            return nil, false
+        local surface = entity.surface
+        local thresholdsCrossed = 0
+
+        Storage.Chunks._LOGGER.debug("Attempting to %s entity %s to chunk(s)", directionName, entityName)
+        local areas_by_chunks = Entity.area_of_by_chunks(entity)
+        for _, area_by_chunk in ipairs(areas_by_chunks) do
+            local chunkPosition = area_by_chunk["chunk"]
+            local chunkData = Storage.Chunks.get_chunk(surface, chunkPosition)
+            if chunkData then
+                Storage.Chunks._LOGGER.debug("Found chunk data for %s at %s", entityName, chunkPosition)
+                local maxArea = chunkData["max"]
+                local currentFill = chunkData["fill"]
+                local oldPercentage = currentFill / maxArea
+
+                local newFill = newFillFunc(currentFill, area_by_chunk["area"], maxArea) --math.min(currentFill + area, maxArea)
+                chunkData["fill"] = newFill
+                local percentage =  newFill / maxArea
+
+                local crossedThreshold = Storage.Chunks._crossed_fill_threshold(oldPercentage, percentage)
+
+                Storage.Chunks._LOGGER.info("Successfully modified %s to chunk %s. New percent filled: %.2f%%",
+                        entityName,
+                        chunkPosition,
+                        percentage * 100
+                )
+                if crossedThreshold == thresholdDirection then
+                    thresholdsCrossed = thresholdsCrossed + 1
+                end
+            else
+                Storage.Chunks._LOGGER.error("Failed to %s %s to chunk %s, not claimed", directionName, entityName, chunkPosition)
+            end
         end
-
-        local maxArea = chunkData["max"]
-        local currentFill = chunkData["fill"]
-        local oldPercentage = currentFill / maxArea
-        local area = Entity.area_of(entity)
-
-        local newFill = newFillFunc(currentFill, area, maxArea) --math.min(currentFill + area, maxArea)
-        chunkData["fill"] = newFill
-        local percentage =  newFill / maxArea
-
-        local crossedThreshold = Storage.Chunks._crossed_fill_threshold(oldPercentage, percentage)
-
-        Storage.Chunks._LOGGER.info("Successfully modified %s to chunk. New percent filled: %.2f%%", entityName, percentage * 100)
-        return crossedThreshold == thresholdDirection, true
+        Storage.Chunks._LOGGER.info("Completed modifying %s to chunks, %d thresholds crossed", entityName, thresholdsCrossed)
+        return thresholdsCrossed
+    else
+        Storage.Chunks._LOGGER.error("Cannot %s entity to chunks, it is nil or invalid", directionName)
+        return 0
     end
 end
 
