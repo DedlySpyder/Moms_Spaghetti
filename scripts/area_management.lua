@@ -106,6 +106,30 @@ function Area_Management.replace_tile(surface, tiles, tileName)
     surface.set_tiles(tiles)
 end
 
+function Area_Management.replace_landfill_tile(surface, tiles, tileName)
+    Logger.debug("Replacing %d tiles", #tiles)
+    local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
+    local deniedTileName = Config.Prototypes.DENIED_TILE_PREFIX .. tileName
+
+    local claimedChunkAdditions = {}
+    for _, tile in ipairs(tiles) do
+        local chunk, chunkPosition = Storage.Chunks.get_chunk_from_position(surface, tile.position)
+        if chunk then
+            tile["name"] = allowedTileName
+            local posX = chunkPosition.x
+            local posY = chunkPosition.y
+            if not claimedChunkAdditions[posX] then claimedChunkAdditions[posX] = {} end
+            claimedChunkAdditions[posX][posY] = (claimedChunkAdditions[posX][posY] or 0) + 1
+        else
+            tile["name"] = deniedTileName
+        end
+    end
+
+    Logger.trace(tiles)
+    surface.set_tiles(tiles)
+    Storage.Chunks.add_to_chunks(surface, claimedChunkAdditions)
+end
+
 
 -- Add/remove an entity from a chunk. Storage will handle the exact logic on if the chunk is being tracked and if we
 -- should change the chunks remaining to claim count

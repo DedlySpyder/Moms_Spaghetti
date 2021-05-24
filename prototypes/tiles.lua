@@ -5,7 +5,7 @@ data:extend({
         name = Config.Prototypes.ALLOWED_TILE,
         type = "tile",
         order = "zzz",
-        collision_mask = {},
+        collision_mask = {"ground-tile"},
         layer = 255,
         decorative_removal_probability = 1,
         variants = {

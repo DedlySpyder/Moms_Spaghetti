@@ -1,8 +1,6 @@
 Pre-0.0.1 stuff
 - Docs/commenting
 - info description
-- when building landfill, need to add to max area & convert it to _mod_ tile
-- tests?
 - on change of percentage full chunk setting - need to recalculate the claimed chunks
 
 
@@ -20,4 +18,6 @@ Future stuff
 - "feature" - actual sprites,icons?
             - add border to mineable tiles? (can I layer something on the border?)
 - feature - color claimable count (1 = yellow, 0 or less = red)
+- feature - mostly debug - show values for each chunk when clicking on the counter?
 - change out allow shortcut for a top left button near the label -> shortcuts are just annoying to work with
+- tests

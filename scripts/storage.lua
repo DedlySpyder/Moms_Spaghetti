@@ -91,6 +91,23 @@ function Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, 
     return Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFill), chunkPosition
 end
 
+-- chunkCountsToAdd is a table of {[x] = {[y] = count}}
+function Storage.Chunks.add_to_chunks(surface, chunkCountsToAdd)
+    Storage.Chunks._LOGGER.debug("Adding to chunks")
+    Storage.Chunks._LOGGER.trace(chunkCountsToAdd)
+    for x, yAndCounts in pairs(chunkCountsToAdd) do
+        for y, count in pairs(yAndCounts) do
+            Storage.Chunks._LOGGER.debug("Attempting to add %d to chunk {x = %d, y = %d}", count, x, y)
+            local chunkData = Storage.Chunks.get_chunk(surface, {x = x, y = y})
+            if chunkData then
+                local newMax = chunkData["max"] + count
+                chunkData["max"] = newMax
+                Storage.Chunks._LOGGER.debug("New max for chunk: %d", newMax)
+            end
+        end
+    end
+end
+
 function Storage.Chunks.get_chunk(surface, chunkPosition)
     Storage.Chunks._LOGGER.debug("Getting chunk")
     if not surface.valid then

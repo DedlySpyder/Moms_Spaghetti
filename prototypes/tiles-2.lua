@@ -13,13 +13,15 @@ for name, tile in pairs(data.raw["tile"]) do
             tile.collision_mask = {}
         end
 
-        if tile.minable then
-            Logger.debug("Tile is minable, so creating allow/deny copies")
+        -- TODO - feature? - to find landfill dynamically, need to look for an item like landfill's place result
+        -- https://github.com/DedlySpyder/FactorioRawData/blob/main/data_raw/item/landfill
+        if tile.minable or tile.name == "landfill" then
+            Logger.debug("Tile is minable, or landfill, so creating allow/deny copies")
             local allowedTile = table.deepcopy(tile)
             allowedTile.name = Config.Prototypes.ALLOWED_TILE_PREFIX .. tile.name
             allowedTile.localised_name =  {"MomsSpaghetti_X_allowed", {"tile-name." .. tile.name}}
             allowedTile.localised_description =  {"tile-description." .. tile.name}
-            allowedTile.collision_mask = {}
+            allowedTile.collision_mask = {"ground-tile"}
             allowedTile.map_color = {r=255, g=255, b=255}
             table.insert(newPrototypes, allowedTile)
 

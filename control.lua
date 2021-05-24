@@ -65,9 +65,12 @@ function on_built_tile(event)
     Logger.debug("Tile built event for %d tiles to %s", #tiles, tileName)
     Logger.trace(tiles)
     if tile.mineable_properties.minable and string.sub(tileName, 1, #Config.MOD_PREFIX) ~= Config.MOD_PREFIX then
-        -- Mod tiles should not be buildable outright, but just in case...
+        -- MomsSpaghetti mod tiles should not be buildable outright, but just in case...
         Logger.info("Minable non-mod tiles built, replacing...")
         Area_Management.replace_tile(surface, tiles, tileName)
+    elseif tileName == "landfill" then
+        Logger.info("Landfill built, replacing and adding to total tile count...")
+        Area_Management.replace_landfill_tile(surface, tiles, tileName)
     else
         Logger.debug("Tile is either not minable or is a mod tile")
     end
