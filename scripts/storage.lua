@@ -17,7 +17,13 @@ Storage.ClaimableChunks = {}
 Storage.ClaimableChunks._LOGGER = LoggerLib.create("Storage/ClaimableChunks")
 function Storage.ClaimableChunks.get()
     local num = global.claimable_chunks
-    Storage.ClaimableChunks._LOGGER.debug("Current claimable chunks: %d", num)
+    Storage.ClaimableChunks._LOGGER.debug("Getting current claimable chunks: %d", num)
+    return num
+end
+
+function Storage.ClaimableChunks.set(num)
+    Storage.ClaimableChunks._LOGGER.debug("Setting current claimable chunks: %d", num)
+    global.claimable_chunks = num
     return num
 end
 
@@ -128,6 +134,10 @@ function Storage.Chunks.get_chunk(surface, chunkPosition)
         end
     end
     Storage.Chunks._LOGGER.debug("No owner found for chunk %s - %s", surfaceName, chunkPositionString)
+end
+
+function Storage.Chunks.get_all_chunks()
+    return global.chunk_data
 end
 
 function Storage.Chunks.get_chunk_from_position(surface, position) --TODO - performance(?) - cache lookups for just this tick?

@@ -35,20 +35,6 @@ function Area_Management.convert_chunk(surface, position, player)
     Logger.debug("Converting chunk at position: %s", position)
     local area = Area.get_chunk_area_from_position(position)
 
-    local xDelta
-    if area.left_top.x < area.right_bottom.x then
-        xDelta = 1
-    else
-        xDelta = -1
-    end
-
-    local yDelta
-    if area.left_top.y < area.right_bottom.y then
-        yDelta = 1
-    else
-        yDelta = -1
-    end
-
     local currentTiles = surface.find_tiles_filtered{area = area}
     local tiles = {}
     for _, tile in ipairs(currentTiles) do
@@ -150,6 +136,27 @@ function Area_Management.remove_entity(entity)
         Storage.ClaimableChunks.decrease(thresholdsCrossed)
         Gui.ClaimableChunkCounter.updateAll()
     end
+end
+
+function Area_Management.recalculate_claimable_chunks()
+    local threshold = Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK
+    Logger.info("Recalculating all chunks against threshold: %.2f", threshold)
+
+    local newClaimableChunks = Config.Settings.STARTING_ALLOWED_CHUNKS
+    for surfaceName, chunks in pairs(Storage.Chunks.get_all_chunks()) do
+        for chunkPositionString, chunkData in pairs(chunks) do
+            local fill, max = chunkData["fill"], chunkData["max"]
+            local percentage = fill / max
+
+            Logger.debug("Chunk on %s at %s is %.2f full", surfaceName, chunkPositionString, percentage)
+            if percentage < threshold then
+                Logger.debug("Chunk is not full enough, costs 1 chunk")
+                newClaimableChunks = newClaimableChunks - 1
+            end
+        end
+    end
+    Storage.ClaimableChunks.set(newClaimableChunks)
+    Gui.ClaimableChunkCounter.updateAll()
 end
 
 return Area_Management

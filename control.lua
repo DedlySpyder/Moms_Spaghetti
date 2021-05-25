@@ -114,3 +114,15 @@ script.on_event(defines.events.on_player_created, function(event)
     local player = game.get_player(event.player_index)
     Gui.ClaimableChunkCounter.draw(player)
 end)
+
+
+script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
+    local setting = event.setting
+
+    if setting == Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK_NAME or
+            setting == Config.Settings.STARTING_ALLOWED_CHUNKS then
+        Logger.info("%s setting changed, refreshing values and recalculating claimable chunks...", setting)
+        Config.Settings.Refresh()
+        Area_Management.recalculate_claimable_chunks()
+    end
+end)
