@@ -5,7 +5,7 @@
   "author": "DedlySpyder",
   "contact": "DedlySpyder@gmail.com",
   "homepage": "",
-  "description": "",
+  "description": "[ALPHA] Restricts production entities to a small area to encourage spaghetti base building",
   "dependencies": [
     "base >= 1.1.0",
     "DedLib >= 0.0.1"
