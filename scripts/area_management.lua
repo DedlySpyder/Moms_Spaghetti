@@ -4,7 +4,6 @@ local Entity = require("__DedLib__/modules/entity")
 local Position = require("__DedLib__/modules/position")
 
 local Storage = require("storage")
-local Config = require("config")
 local Util = require("util")
 local Gui = require("gui")
 

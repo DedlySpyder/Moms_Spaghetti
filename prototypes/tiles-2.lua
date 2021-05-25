@@ -1,6 +1,4 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "Moms_Spaghetti", prefix = "Tiles-2"}
-
-local Config = require("__Moms_Spaghetti__/scripts/config")
 local Data_Util = require("data_util")
 
 local LAYER_ONE = Data_Util.CHOSEN_MASKS[1]

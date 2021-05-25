@@ -1,7 +1,8 @@
 local Logger = require("__DedLib__/modules/logger").create("Control")
 
+require("scripts/config") -- Config is a singleton, so it only needs called here
+
 local Area_Management = require("scripts/area_management")
-local Config = require("scripts/config")
 local Storage = require("scripts/storage")
 local Gui = require("scripts/gui")
 

@@ -1,5 +1,3 @@
-local Config = require("__Moms_Spaghetti__/scripts/config")
-
 data:extend({
     {
         name = Config.Prototypes.ALLOWED_TILE,

@@ -1,7 +1,5 @@
 local Logger = require("__DedLib__/modules/logger").create("Util")
 
-local Config = require("config")
-
 local Util = {}
 
 -- Accepts an allowed or denied tile name and returns the opposite of the pair

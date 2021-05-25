@@ -3,8 +3,6 @@ local Area = require("__DedLib__/modules/area")
 local Entity = require("__DedLib__/modules/entity")
 local Position = require("__DedLib__/modules/position")
 
-local Config = require("config")
-
 local Storage = {}
 
 

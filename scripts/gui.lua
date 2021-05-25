@@ -2,7 +2,6 @@ local mod_gui = require("mod-gui")
 
 local LoggerLib = require("__DedLib__/modules/logger")
 local Storage = require("storage")
-local Config = require("config")
 
 
 local Gui = {}

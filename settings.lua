@@ -1,4 +1,4 @@
-local Config = require("scripts/config")
+require("scripts/config")
 
 data:extend({
 	-- Runtime
