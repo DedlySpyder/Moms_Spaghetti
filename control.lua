@@ -129,10 +129,10 @@ end)
 
 script.on_event(defines.events.on_gui_click, function(event)
     local element = event.element
-    local player = game.get_player(event.player_index)
 
     Logger.info("Clicked %s", element.name)
     if element.tags["mod"] == Config.MOD_PREFIX then
+        local player = game.get_player(event.player_index)
         local name = element.name
         Logger.info("Mod interactive element %s clicked by %s", name, player.name)
 
