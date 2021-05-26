@@ -126,3 +126,20 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
         Area_Management.recalculate_claimable_chunks()
     end
 end)
+
+script.on_event(defines.events.on_gui_click, function(event)
+    local element = event.element
+    local player = game.get_player(event.player_index)
+
+    Logger.info("Clicked %s", element.name)
+    if element.tags["mod"] == Config.MOD_PREFIX then
+        local name = element.name
+        Logger.info("Mod interactive element %s clicked by %s", name, player.name)
+
+        if name == Gui.ClaimableChunkCounter._LABEL_NAME then
+            Gui.ClaimedChunkDetails.draw(player)
+        elseif name == Gui.ClaimedChunkDetails._PREFIX .. "close" then
+            Gui.ClaimedChunkDetails.destroy(player)
+        end
+    end
+end)
