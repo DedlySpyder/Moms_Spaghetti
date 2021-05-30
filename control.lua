@@ -129,17 +129,21 @@ end)
 
 script.on_event(defines.events.on_gui_click, function(event)
     local element = event.element
+    local tags = element.tags
 
     Logger.info("Clicked %s", element.name)
-    if element.tags["mod"] == Config.MOD_PREFIX then
+    if tags["mod"] == Config.MOD_PREFIX then
         local player = game.get_player(event.player_index)
         local name = element.name
         Logger.info("Mod interactive element %s clicked by %s", name, player.name)
 
         if name == Gui.ClaimableChunkCounter._LABEL_NAME then
             Gui.ClaimedChunkDetails.draw(player)
-        elseif name == Gui.ClaimedChunkDetails._PREFIX .. "close" then
+        elseif name == Gui.ClaimedChunkDetails._CLOSE_BUTTON_NAME  then
             Gui.ClaimedChunkDetails.destroy(player)
+        elseif tags["action"] == "describe_chunk" then
+            local surface = game.get_surface(tags["surfaceName"])
+            Gui.ClaimedChunkDetails.update_describe_section(player, surface, tags["chunkPositionString"])
         end
     end
 end)

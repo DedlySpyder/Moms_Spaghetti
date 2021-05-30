@@ -50,7 +50,12 @@ end
 Storage.Chunks = {}
 Storage.Chunks._LOGGER = LoggerLib.create("Storage/Chunks")
 function Storage.Chunks._position_to_string(position)
-    return serpent.line(position)
+    return serpent.line(position) -- TODO - performance - jarg said to someone else that serpent is slower than doing this stuff yourself
+end
+
+function Storage.Chunks._string_to_position(positionString) -- TODO - fix - this should just be stored as [x][y] instead of as a string
+    local position = loadstring(string.format("do local _ = %s; return _; end", positionString))()
+    return position
 end
 
 function Storage.Chunks.claim_chunk(surface, chunkPosition, tileCount, currentFill)
