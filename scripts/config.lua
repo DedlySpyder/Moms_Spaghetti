@@ -6,7 +6,7 @@ Config.MOD_PREFIX = "MomsSpaghetti"
 
 Config.Prototypes = {}
 Config.Prototypes.ALLOWED_TILE = Config.MOD_PREFIX .. "_allowed_tile"
-Config.Prototypes.CHUNK_SELECTOR = Config.MOD_PREFIX .. "_chunk_selector"
+Config.Prototypes.CHUNK_SELECTOR = Config.MOD_PREFIX .. "_chunk_selector" -- TODO - rename - this isn't a chunk selector anymore
 
 -- These 2 MUST be the same length, for inversion logic in Util.invert_name_prefix
 Config.Prototypes.ALLOWED_TILE_PREFIX = Config.MOD_PREFIX .. "_allowed_tile_"
@@ -34,13 +34,13 @@ Config.Prototypes.RESTRICTED_TYPES = {
 -- This file is used in the settings phase, so the settings global does not exist there
 Config.Settings = {}
 if settings and settings.global then
-    Config.Settings.STARTING_ALLOWED_CHUNKS_NAME = Config.MOD_PREFIX .. "_starting_allowed_chunks"
-    Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK_NAME = Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk"
+    Config.Settings.STARTING_ALLOWED_TILES_NAME = Config.MOD_PREFIX .. "_starting_allowed_tiles"
+    Config.Settings.POPULATED_TILE_BONUS_NAME = Config.MOD_PREFIX .. "_populated_tile_bonus"
 
     function Config.Settings.Refresh()
         Logger.info("Refreshing config values")
-        Config.Settings.STARTING_ALLOWED_CHUNKS = settings.global[Config.Settings.STARTING_ALLOWED_CHUNKS_NAME].value
-        Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK = settings.global[Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK_NAME].value / 100
+        Config.Settings.STARTING_ALLOWED_TILES = settings.global[Config.Settings.STARTING_ALLOWED_TILES_NAME].value
+        Config.Settings.POPULATED_TILE_BONUS = settings.global[Config.Settings.POPULATED_TILE_BONUS_NAME].value
     end
 
     Config.Settings.Refresh()

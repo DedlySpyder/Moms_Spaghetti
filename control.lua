@@ -8,7 +8,18 @@ local Gui = require("scripts/gui")
 
 script.on_init(function()
     Storage.init()
-    Gui.ClaimableChunkCounter.drawAll()
+    Gui.ClaimableTileCounter.drawAll()
+end)
+
+-- Select the tiles (not water)
+-- manually do a find for entities that are entities with health and collide with a normal collision mask
+    -- then manually check for ignorable types
+script.on_event(defines.events.on_player_selected_area, function(event)
+    local item = event.item
+    if item == Config.Prototypes.CHUNK_SELECTOR then
+        Logger.info("Area selected using %s", item)
+        Area_Management.add_selected_area(event.surface, event.area, event.tiles, game.get_player(event.player_index))
+    end
 end)
 
 -- Ghosts are added in here, so we don't care when the ghost is constructed, since it was already counted
@@ -17,26 +28,8 @@ script.on_event(defines.events.on_built_entity, function(event)
     local entityName = entity.name
 
     Logger.debug("Player built event for entity: %s", entityName)
-    if entityName == Config.Prototypes.CHUNK_SELECTOR then
-        local player = game.get_player(event.player_index)
-        if player and player.valid then
-            Logger.info("Chunk chooser event for %s", player.name)
-            Area_Management.convert_chunk(entity.surface, entity.position, player)
-            entity.destroy()
-
-            -- Put the selector item back
-            local cursorStack = player.cursor_stack
-            if cursorStack and cursorStack.valid then
-                if not cursorStack.valid_for_read or cursorStack.name == Config.Prototypes.CHUNK_SELECTOR then
-                    player.cursor_stack.set_stack{name = Config.Prototypes.CHUNK_SELECTOR, count = 1}
-                end
-            end
-        end
-    else
-        Area_Management.add_entity(entity)
-    end
+    Area_Management.add_entity(entity)
 end)
-
 
 function on_entity_removed(event)
     local entity = event.entity or event.ghost
@@ -69,9 +62,6 @@ function on_built_tile(event)
         -- MomsSpaghetti mod tiles should not be buildable outright, but just in case...
         Logger.info("Minable non-mod tiles built, replacing...")
         Area_Management.replace_tile(surface, tiles, tileName)
-    elseif tileName == "landfill" then
-        Logger.info("Landfill built, replacing and adding to total tile count...")
-        Area_Management.replace_landfill_tile(surface, tiles, tileName)
     else
         Logger.debug("Tile is either not minable or is a mod tile")
     end
@@ -96,15 +86,9 @@ function on_script_raised_set_tiles(event)
 
     Logger.trace("Tiles have been grouped: %s", groupedTiles)
 
-    local validPrototypes = game.get_filtered_tile_prototypes({{filter = "minable"}})
     for groupName, tiles in pairs(groupedTiles) do
-        local prototype = validPrototypes[groupName]
-        if prototype then
-            Logger.debug("Triggering normal built tiles event to tile %s", groupName)
-            on_built_tile{surface_index = event.surface_index, tiles = tiles, tile = prototype}
-        else
-            Logger.debug("Skipping past non minable tile: %s", groupName)
-        end
+        Logger.debug("Triggering normal built tiles event to tile %s", groupName)
+        on_built_tile{surface_index = event.surface_index, tiles = tiles, tile = prototype}
     end
 end
 script.on_event(defines.events.script_raised_set_tiles, on_script_raised_set_tiles)
@@ -112,38 +96,36 @@ script.on_event(defines.events.script_raised_set_tiles, on_script_raised_set_til
 
 script.on_event(defines.events.on_player_created, function(event)
     local player = game.get_player(event.player_index)
-    Gui.ClaimableChunkCounter.draw(player)
+    Gui.ClaimableTileCounter.draw(player)
 end)
 
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     local setting = event.setting
 
-    if setting == Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK_NAME or
-            setting == Config.Settings.STARTING_ALLOWED_CHUNKS then
-        Logger.info("%s setting changed, refreshing values and recalculating claimable chunks...", setting)
+    if setting == Config.Settings.STARTING_ALLOWED_TILES_NAME or setting == Config.Settings.POPULATED_TILE_BONUS_NAME then
+        Logger.info("%s setting changed, refreshing values and recalculating allowed tiles...", setting)
         Config.Settings.Refresh()
-        Area_Management.recalculate_claimable_chunks()
+        Storage.AllowedTiles.recalculate()
+        Gui.ClaimableTileCounter.updateAll()
     end
 end)
 
-script.on_event(defines.events.on_gui_click, function(event)
-    local element = event.element
-    local tags = element.tags
 
-    Logger.info("Clicked %s", element.name)
-    if tags["mod"] == Config.MOD_PREFIX then
-        local player = game.get_player(event.player_index)
-        local name = element.name
-        Logger.info("Mod interactive element %s clicked by %s", name, player.name)
-
-        if name == Gui.ClaimableChunkCounter._LABEL_NAME then
-            Gui.ClaimedChunkDetails.draw(player)
-        elseif name == Gui.ClaimedChunkDetails._CLOSE_BUTTON_NAME  then
-            Gui.ClaimedChunkDetails.destroy(player)
-        elseif tags["action"] == "describe_chunk" then
-            local surface = game.get_surface(tags["surfaceName"])
-            Gui.ClaimedChunkDetails.update_describe_section(player, surface, tags["chunkPositionString"])
-        end
-    end
-end)
+--script.on_event(defines.events.on_gui_click, function(event) -- TODO - ignored for now
+--    local element = event.element
+--    local tags = element.tags
+--
+--    Logger.info("Clicked %s", element.name)
+--    if tags["mod"] == Config.MOD_PREFIX then
+--        local player = game.get_player(event.player_index)
+--        local name = element.name
+--        Logger.info("Mod interactive element %s clicked by %s", name, player.name)
+--
+--        if tags["action"] == "open_details" then
+--            Gui.ClaimedAreaDetails.draw(player)
+--        elseif tags["action"] == "close_details"  then
+--            Gui.ClaimedAreaDetails.destroy(player)
+--        end
+--    end
+--end)

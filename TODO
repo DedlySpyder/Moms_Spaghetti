@@ -1,6 +1,9 @@
 Pre-0.0.1 stuff
 - Docs/commenting
 
+- restrict claiming to have to be adjacent to mod tile?
+- - count area +1 on all sides and see if it contains any mod tiles
+- can't partially select an entity, just expand to include the whole thing? now or later?
 
 
 Future stuff

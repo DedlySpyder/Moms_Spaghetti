@@ -1,4 +1,4 @@
-local Logger = require("__DedLib__/modules/logger").create("Area Management")
+local Logger = require("__DedLib__/modules/logger").create("Area_Management")
 local Area = require("__DedLib__/modules/area")
 local Entity = require("__DedLib__/modules/entity")
 local Position = require("__DedLib__/modules/position")
@@ -15,75 +15,93 @@ chunk is  above a certain percentage full, then a new chunk can be claimed.
 ]]--
 local Area_Management = {}
 
--- Claim a whole chunk and convert the current tiles to allowed tiles
-function Area_Management.convert_chunk(surface, position, player)
-    Logger.debug("Attempting to convert chunk")
-    local claimableChunks = Storage.ClaimableChunks.get()
-    if claimableChunks < 1 then
-        Logger.warn("Not enough chunks left to claim this one")
-        player.print({"MomsSpaghetti_warn_convert_chunk_failed_not_enough_claimable_chunks"})
-        return false
+function Area_Management.add_selected_area(surface, area, tiles, player)
+    Logger.debug("add_selected_area original area: %s", area)
+    area = Area.round_bounding_box_up(area)
+    Logger.info("Adding area %s on surface %s, selected by %s, containing %d tile(s)", area, surface.name, player.name, #tiles)
+
+    local leftTop = area.left_top
+    local rightBottom = area.right_bottom
+
+    Logger.debug("Checking entities in the area for border infringement")
+    local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
+    local usedSize = 0
+    for _, e in ipairs(entities) do
+        local bb = Area.round_bounding_box_up(e.bounding_box)
+        local eLt = bb.left_top
+        local eRb = bb.right_bottom
+        if not (Position.is_greater_than_or_equal(eLt, leftTop) and Position.is_less_than_or_equal(eRb, rightBottom)) then
+            Logger.error("Entity %s <%s>is not entirely within selection tool bounds, not supported", e.name, bb)
+            player.print("Cannot partially add entities at this time") -- TODO localize
+            return
+        end
+        usedSize = usedSize + Entity.area_of(e) -- TODO - fixme - trees are dumb here, they go over the border into adjacent tiles, but don't block things from there
+        -- Should I just round instead of rounding up?
     end
-    position = Position.standardize(position)
-    local oldChunkData, chunkPosition = Storage.Chunks.get_chunk_from_position(surface, position)
-    if oldChunkData then
-        Logger.warn("Chunk %s on surface %s has already been claimed", position, surface.name)
-        player.print({"MomsSpaghetti_warn_convert_chunk_failed_already_claimed"})
-        return false
+    Logger.debug("No entities crossed the area border, total size of entities is %d", usedSize)
+
+    -- TODO - feature - before this make sure tiles are adjacent to prior allowed tiles somewhere
+            -- Count tiles filtered on area +1, look for not the known layer (does water have the known layer?)
+    local newTiles = Area_Management.build_allowed_tiles(tiles)
+
+    local tileCount = #newTiles
+    if tileCount <= 0 then
+        Logger.warn("No valid tiles selected by player, exiting add_selected_area...")
+        return
     end
 
-    Logger.debug("Converting chunk at position: %s", position)
-    local area = Area.get_chunk_area_from_position(position)
+    local cost = tileCount - usedSize
+    local currentAllowed = Storage.AllowedTiles.get()["remainder"]
+    if cost > currentAllowed then
+        Logger.error("Too much area requested by player, %d requsted, %d allowed", cost, currentAllowed)
+        player.print("Too large of an area requested, you only have " .. currentAllowed .. " tiles available at the moment") -- TODO localize?
+        return
+    end
 
-    local currentTiles = surface.find_tiles_filtered{area = area}
+    Logger.debug("Converting %d tiles to allowed placement tiles", tileCount)
+    Logger.trace(newTiles)
+
+    surface.set_tiles(newTiles)
+    Storage.AllowedTiles.increase{used = usedSize, total = tileCount}
+    Gui.ClaimableTileCounter.updateAll()
+end
+
+function Area_Management.build_allowed_tiles(currentTiles)
     local tiles = {}
     for _, tile in ipairs(currentTiles) do
-        if string.sub(tile.name, 1, #Config.Prototypes.DENIED_TILE_PREFIX) == Config.Prototypes.DENIED_TILE_PREFIX then
-            table.insert(tiles, {name = Util.invert_name_prefix(tile.name), position = tile.position})
-        elseif not tile.collides_with("water-tile") then
-            table.insert(tiles, {name = Config.Prototypes.ALLOWED_TILE, position = tile.position})
-        end
-    end
-
-    local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
-    local takenSpace = 0
-    for _, entity in ipairs(entities) do
-        local areas_by_chunks = Entity.area_of_by_chunks(entity)
-        for _, area_by_chunk in ipairs(areas_by_chunks) do
-            local chunk = area_by_chunk["chunk"]
-            if chunk.x == chunkPosition.x and chunk.y == chunkPosition.y then
-                takenSpace = takenSpace + area_by_chunk["area"]
-                break
+        if tile.collides_with("layer-55") then -- TODO - lookup - get from data somehow
+            if string.sub(tile.name, 1, #Config.Prototypes.DENIED_TILE_PREFIX) == Config.Prototypes.DENIED_TILE_PREFIX then
+                table.insert(tiles, {name = Util.invert_name_prefix(tile.name), position = tile.position})
+            elseif not tile.collides_with("water-tile") then
+                table.insert(tiles, {name = Config.Prototypes.ALLOWED_TILE, position = tile.position})
             end
         end
     end
-
-    local tileCount = #tiles
-    Logger.debug("Converting %d tiles to allowed placement tiles", tileCount)
-    Logger.trace(tiles)
-
-    surface.set_tiles(tiles)
-    local claimed = Storage.Chunks.claim_chunk_from_position(surface, position, tileCount, takenSpace)
-
-    if claimed then
-        Storage.ClaimableChunks.decrease()
-        Gui.ClaimableChunkCounter.updateAll()
-        return true
-    end
+    return tiles
 end
 
 -- Replace tiles that are placeable by players
 -- There are either allowed or denied versions of all of these, and each one is checked to see which version is needed
 function Area_Management.replace_tile(surface, tiles, tileName)
-    Logger.debug("Replacing %d tiles", #tiles)
+    Logger.info("Replacing %d tiles", #tiles)
     local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
     local deniedTileName = Config.Prototypes.DENIED_TILE_PREFIX .. tileName
 
+    local collisionCache = {}
     for _, tile in ipairs(tiles) do
-        if Storage.Chunks.get_chunk_from_position(surface, tile.position) then
-            tile["name"] = allowedTileName
+        local hiddenTileName = surface.get_tile(tile.position).hidden_tile
+        local collides
+        if collisionCache[hiddenTileName] then
+            collides = collisionCache[hiddenTileName]["value"]
         else
+            collides = game.tile_prototypes[hiddenTileName].collision_mask["layer-55"] -- TODO - lookup
+            collisionCache[hiddenTileName] = {value = collides}
+        end
+
+        if collides then
             tile["name"] = deniedTileName
+        else
+            tile["name"] = allowedTileName
         end
     end
 
@@ -91,72 +109,41 @@ function Area_Management.replace_tile(surface, tiles, tileName)
     surface.set_tiles(tiles)
 end
 
-function Area_Management.replace_landfill_tile(surface, tiles, tileName)
-    Logger.debug("Replacing %d tiles", #tiles)
-    local allowedTileName = Config.Prototypes.ALLOWED_TILE_PREFIX .. tileName
-    local deniedTileName = Config.Prototypes.DENIED_TILE_PREFIX .. tileName
 
-    local claimedChunkAdditions = {}
-    for _, tile in ipairs(tiles) do
-        local chunk, chunkPosition = Storage.Chunks.get_chunk_from_position(surface, tile.position)
-        if chunk then
-            tile["name"] = allowedTileName
-            local posX = chunkPosition.x
-            local posY = chunkPosition.y
-            if not claimedChunkAdditions[posX] then claimedChunkAdditions[posX] = {} end
-            claimedChunkAdditions[posX][posY] = (claimedChunkAdditions[posX][posY] or 0) + 1
-        else
-            tile["name"] = deniedTileName
-        end
+-- Add/remove an entity from allowed area. Storage will handle the remainder math, this just needs to kick it off and
+-- Update the GUI
+function Area_Management._count_entity(entity)
+    -- This needs rounded up because a 1x1 entity is normally smaller than 1 tile, so will not find anything
+    local tiles = entity.surface.find_tiles_filtered{area = Area.round_bounding_box_up(entity.bounding_box)}
+    if tiles and #tiles > 0 and not tiles[1].collides_with("layer-55") then -- TODO - lookup
+        return entity.prototype.collision_mask["object-layer"]
     end
-
-    Logger.trace(tiles)
-    surface.set_tiles(tiles)
-    Storage.Chunks.add_to_chunks(surface, claimedChunkAdditions)
+    -- TODO - waiting on interface request - https://forums.factorio.com/viewtopic.php?f=28&t=98621
+    --return entity.prototype.collision_mask["object-layer"] and
+    --        entity.surface.count_tiles_filtered{
+    --            area = Area.round_bounding_box_up(entity.bounding_box),
+    --            collision_mask = "layer-55", -- TODO - lookup
+    --            invert = true
+    --        } > 0
 end
 
-
--- Add/remove an entity from a chunk. Storage will handle the exact logic on if the chunk is being tracked and if we
--- should change the chunks remaining to claim count
 function Area_Management.add_entity(entity)
-    Logger.debug("Adding entity %s", entity.name)
-    local thresholdsCrossed = Storage.Chunks.add_entity(entity)
-    if thresholdsCrossed > 0 then
-        Logger.info("Entity added crossed %d threshold(s) upwards, so incrementing chunk count", thresholdsCrossed)
-        Storage.ClaimableChunks.increase(thresholdsCrossed)
-        Gui.ClaimableChunkCounter.updateAll()
+    if Area_Management._count_entity(entity) then
+        Logger.info("Adding entity %s", entity.name)
+        local size = Entity.area_of(entity)
+        Storage.AllowedTiles.increase{used = size}
+        Gui.ClaimableTileCounter.updateAll()
     end
 end
 
 function Area_Management.remove_entity(entity)
-    Logger.debug("Removing entity %s", entity.name)
-    local thresholdsCrossed = Storage.Chunks.remove_entity(entity)
-    if thresholdsCrossed > 0 then
-        Logger.info("Entity removed crossed %d threshold(s) downwards, so decrementing chunk count", thresholdsCrossed)
-        Storage.ClaimableChunks.decrease(thresholdsCrossed)
-        Gui.ClaimableChunkCounter.updateAll()
+    if Area_Management._count_entity(entity) then
+        Logger.info("Removing entity %s", entity.name)
+        local size = Entity.area_of(entity)
+        Storage.AllowedTiles.decrease{used = size}
+        Gui.ClaimableTileCounter.updateAll()
     end
 end
 
-function Area_Management.recalculate_claimable_chunks()
-    local threshold = Config.Settings.CHUNK_PERCENTAGE_FULL_FOR_NEW_CHUNK
-    Logger.info("Recalculating all chunks against threshold: %.2f", threshold)
-
-    local newClaimableChunks = Config.Settings.STARTING_ALLOWED_CHUNKS
-    for surfaceName, chunks in pairs(Storage.Chunks.get_all_chunks()) do
-        for chunkPositionString, chunkData in pairs(chunks) do
-            local fill, max = chunkData["fill"], chunkData["max"]
-            local percentage = fill / max
-
-            Logger.debug("Chunk on %s at %s is %.2f full", surfaceName, chunkPositionString, percentage)
-            if percentage < threshold then
-                Logger.debug("Chunk is not full enough, costs 1 chunk")
-                newClaimableChunks = newClaimableChunks - 1
-            end
-        end
-    end
-    Storage.ClaimableChunks.set(newClaimableChunks)
-    Gui.ClaimableChunkCounter.updateAll()
-end
 
 return Area_Management

@@ -3,20 +3,20 @@ require("scripts/config")
 data:extend({
 	-- Runtime
 	{
-		name = Config.MOD_PREFIX .. "_starting_allowed_chunks",
+		name = Config.MOD_PREFIX .. "_starting_allowed_tiles",
 		type = "int-setting",
 		setting_type = "runtime-global",
-		default_value = 4,
+		default_value = 4096,
 		minimum_value = 1,
 		order = "000"
 	},
 	{
-		name = Config.MOD_PREFIX .. "_chunk_percentage_full_for_new_chunk",
+		name = Config.MOD_PREFIX .. "_populated_tile_bonus",
 		type = "double-setting",
 		setting_type = "runtime-global",
-		default_value = 75,
+		default_value = 0.75,
 		minimum_value  = 0,
-		maximum_value  = 100,
+		maximum_value  = 1,
 		order = "100"
 	}
 })
