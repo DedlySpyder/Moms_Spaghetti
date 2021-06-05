@@ -18,6 +18,14 @@ local Area_Management = {}
 function Area_Management.add_selected_area(surface, area, tiles, player)
     Logger.debug("add_selected_area original area: %s", area)
     area = Area.round_bounding_box_up(area)
+
+    local allowed = Area_Management.is_adjacent_or_first_selection(surface, area)
+    if not allowed then
+        Logger.warn("Player %s attempting to add invalid selection on %s at %s", player.name, surface.name, area)
+        player.print("New allowed area must be adjacent to current allowed area") -- TODO localize
+        return
+    end
+
     Logger.info("Adding area %s on surface %s, selected by %s, containing %d tile(s)", area, surface.name, player.name, #tiles)
 
     local leftTop = area.left_top
@@ -64,6 +72,38 @@ function Area_Management.add_selected_area(surface, area, tiles, player)
     surface.set_tiles(newTiles)
     Storage.AllowedTiles.increase{used = usedSize, total = tileCount}
     Gui.ClaimableTileCounter.updateAll()
+end
+
+-- TODO - abuse possibility - can select length across water and it would be allowed - I don't think I care enough for now
+function Area_Management._area_contains_allowed_tiles(surface, area)
+    Logger.debug("Checking if area %s on surface %s contains allowed tiles", area, surface.name)
+    local tiles = surface.find_tiles_filtered{area = area}
+    if tiles and #tiles > 0 then
+        for _, tile in ipairs(tiles) do
+            if not tile.collides_with("layer-55") then -- TODO - lookup
+                Logger.debug("Found allowed tile %s in area at %s", tile.name, tile.position)
+                return true
+            end
+        end
+    end
+    Logger.debug("Failed to find allowed tile")
+    return false
+    -- TODO - interface request - https://forums.factorio.com/viewtopic.php?f=28&t=98621
+    --return entity.surface.count_tiles_filtered{
+    --            area = area,
+    --            collision_mask = "layer-55", -- TODO - lookup
+    --            invert = true
+    --        } > 0
+end
+
+function Area_Management.is_adjacent_or_first_selection(surface, area)
+    local data = Storage.AllowedTiles.get()
+    if data["total"] == 0 then
+        return true
+    end
+
+    local searchArea = Area.grow_bounding_box_by_n(area, 1)
+    return Area_Management._area_contains_allowed_tiles(surface, searchArea)
 end
 
 function Area_Management.build_allowed_tiles(currentTiles)
@@ -114,17 +154,8 @@ end
 -- Update the GUI
 function Area_Management._count_entity(entity)
     -- This needs rounded up because a 1x1 entity is normally smaller than 1 tile, so will not find anything
-    local tiles = entity.surface.find_tiles_filtered{area = Area.round_bounding_box_up(entity.bounding_box)}
-    if tiles and #tiles > 0 and not tiles[1].collides_with("layer-55") then -- TODO - lookup
-        return entity.prototype.collision_mask["object-layer"]
-    end
-    -- TODO - waiting on interface request - https://forums.factorio.com/viewtopic.php?f=28&t=98621
-    --return entity.prototype.collision_mask["object-layer"] and
-    --        entity.surface.count_tiles_filtered{
-    --            area = Area.round_bounding_box_up(entity.bounding_box),
-    --            collision_mask = "layer-55", -- TODO - lookup
-    --            invert = true
-    --        } > 0
+    local area = Area.round_bounding_box_up(entity.bounding_box)
+    return Area_Management._area_contains_allowed_tiles(entity.surface, area)
 end
 
 function Area_Management.add_entity(entity)
