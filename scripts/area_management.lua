@@ -15,6 +15,15 @@ chunk is  above a certain percentage full, then a new chunk can be claimed.
 ]]--
 local Area_Management = {}
 
+function Area_Management._index_tiles(tiles)
+    local t = {}
+    for _, tile in ipairs(tiles) do
+        local pos = tile.position
+        t[pos.x .. "," .. pos.y] = true
+    end
+    return t
+end
+
 function Area_Management.add_selected_area(surface, area, tiles, player)
     Logger.debug("add_selected_area original area: %s", area)
     area = Area.round_bounding_box_up(area)
@@ -32,21 +41,33 @@ function Area_Management.add_selected_area(surface, area, tiles, player)
     local rightBottom = area.right_bottom
 
     Logger.debug("Checking entities in the area for border infringement")
+    local tilesIndex -- Lazily evaluate
     local entities = surface.find_entities_filtered{area = area, collision_mask = "object-layer"}
     local usedSize = 0
     for _, e in ipairs(entities) do
         local bb = Area.round_bounding_box_up(e.bounding_box)
+        local eName = e.name
+        Logger.trace("Found entity %s with area: %s", eName, bb)
         local eLt = bb.left_top
         local eRb = bb.right_bottom
         if not (Position.is_greater_than_or_equal(eLt, leftTop) and Position.is_less_than_or_equal(eRb, rightBottom)) then
-            Logger.error("Entity %s <%s>is not entirely within selection tool bounds, not supported", e.name, bb)
-            player.print("Cannot partially add entities at this time") -- TODO localize
-            return
+            if not tilesIndex then tilesIndex = Area_Management._index_tiles(tiles) end
+            for x = eLt.x, eRb.x do
+                for y = eLt.y, eRb.y do
+                    local newTileIndex = x .. "," .. y
+                    if not tilesIndex[newTileIndex] then
+                        Logger.trace("Adding new tile for %s at (%s,%s)", eName, x, y)
+                        tilesIndex[newTileIndex] = true
+                        table.insert(tiles, surface.get_tile(x, y))
+                    end
+                end
+            end
         end
-        usedSize = usedSize + Entity.area_of(e) -- TODO - fixme - trees are dumb here, they go over the border into adjacent tiles, but don't block things from there
+        usedSize = usedSize + Entity.area_of(e)
+        -- TODO - fixme - trees are dumb here, they go over the border into adjacent tiles, but don't block things from there
         -- Should I just round instead of rounding up?
     end
-    Logger.debug("No entities crossed the area border, total size of entities is %d", usedSize)
+    Logger.debug("Finished adjusting for entities, tile count is now %d, total size of entities is %d", #tiles, usedSize)
 
     -- TODO - feature - before this make sure tiles are adjacent to prior allowed tiles somewhere
             -- Count tiles filtered on area +1, look for not the known layer (does water have the known layer?)

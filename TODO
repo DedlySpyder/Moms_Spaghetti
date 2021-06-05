@@ -1,8 +1,6 @@
 Pre-0.0.1 stuff
 - Docs/commenting
 
-- can't partially select an entity, just expand to include the whole thing? now or later?
-
 
 Future stuff
 - on script built, if it's not overlapping something else then I'll need to count it
