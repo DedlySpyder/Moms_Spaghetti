@@ -3,6 +3,8 @@ Pre-0.0.1 stuff
 
 
 Future stuff
+- bug - placeable tiles will continuously try to replace themselves (since I replace them they aren't the same tile anymore)
+- bug - concrete and other placeable tiles (minus landfill) aren't blueprintable
 - on script built, if it's not overlapping something else then I'll need to count it
 - Ghost timeout? it's a week in game, so irrelevant I guess?
 - on_player_mined_entity - triggers on mining ore, I can filter that out with event filters

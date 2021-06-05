@@ -30,6 +30,26 @@ Config.Prototypes.RESTRICTED_TYPES = {
     "solar-panel",
 }
 
+Config.Prototypes.LAYER_1_ITEM_NAME = Config.MOD_PREFIX .. "_layer_1_item"
+
+Config.Game = {}
+function Config.Game.refresh()
+    if game then
+        Config.Game.ModLayer = game.get_filtered_item_prototypes(
+                {{filter = "name", name = Config.Prototypes.LAYER_1_ITEM_NAME}}
+        )[Config.Prototypes.LAYER_1_ITEM_NAME].order
+        global.layer = Config.Game.ModLayer
+    else
+        Config.Game.ModLayer = global.layer
+    end
+
+    Logger.debug("Loaded mod layer from data: %s", Config.Game.ModLayer)
+end
+
+if game then
+    Config.Game.refresh()
+end
+
 
 -- This file is used in the settings phase, so the settings global does not exist there
 Config.Settings = {}

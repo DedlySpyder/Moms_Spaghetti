@@ -9,6 +9,15 @@ local Gui = require("scripts/gui")
 script.on_init(function()
     Storage.init()
     Gui.ClaimableTileCounter.drawAll()
+    Config.Game.refresh()
+end)
+
+script.on_configuration_changed(function()
+    Config.Game.refresh()
+end)
+
+script.on_load(function()
+    Config.Game.refresh()
 end)
 
 -- Select the tiles (not water)

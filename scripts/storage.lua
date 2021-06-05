@@ -3,6 +3,7 @@ local LoggerLib = require("__DedLib__/modules/logger")
 local Storage = {}
 
 
+-- NOTE - global.layer is used by config
 function Storage.init()
     global.allowed_tiles = global.allowed_tiles or {used = 0, total = 0, remainder = Config.Settings.STARTING_ALLOWED_TILES}
 end

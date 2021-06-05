@@ -50,4 +50,19 @@ end
 Logger.debug_block("Chosen mask(s): %s", chosenMasks)
 Data_Util.CHOSEN_MASKS = chosenMasks
 
+local dummyItem = {
+    type = "item",
+    icon = "__DedLib__/graphics/blank_1x1.png",
+    flags = {"hidden"},
+    icon_size = "1",
+    stack_size = 1
+}
+local chosenMask1Item = table.deepcopy(dummyItem)
+chosenMask1Item.name = Config.Prototypes.LAYER_1_ITEM_NAME
+chosenMask1Item.order = Data_Util.CHOSEN_MASKS[1]
+
+data:extend({
+    chosenMask1Item
+})
+
 return Data_Util

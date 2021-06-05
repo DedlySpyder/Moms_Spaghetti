@@ -108,7 +108,7 @@ function Area_Management._area_contains_allowed_tiles(surface, area)
     local tiles = surface.find_tiles_filtered{area = area}
     if tiles and #tiles > 0 then
         for _, tile in ipairs(tiles) do
-            if not tile.collides_with("layer-55") then -- TODO - lookup
+            if not tile.collides_with(Config.Game.ModLayer) then
                 Logger.debug("Found allowed tile %s in area at %s", tile.name, tile.position)
                 return true
             end
@@ -119,7 +119,7 @@ function Area_Management._area_contains_allowed_tiles(surface, area)
     -- TODO - interface request - https://forums.factorio.com/viewtopic.php?f=28&t=98621
     --return entity.surface.count_tiles_filtered{
     --            area = area,
-    --            collision_mask = "layer-55", -- TODO - lookup
+    --            collision_mask = Config.Game.ModLayer,
     --            invert = true
     --        } > 0
 end
@@ -137,7 +137,7 @@ end
 function Area_Management.build_allowed_tiles(currentTiles)
     local tiles = {}
     for _, tile in ipairs(currentTiles) do
-        if tile.collides_with("layer-55") then -- TODO - lookup - get from data somehow
+        if tile.collides_with(Config.Game.ModLayer) then
             if string.sub(tile.name, 1, #Config.Prototypes.DENIED_TILE_PREFIX) == Config.Prototypes.DENIED_TILE_PREFIX then
                 table.insert(tiles, {name = Util.invert_name_prefix(tile.name), position = tile.position})
             elseif not tile.collides_with("water-tile") then
@@ -162,7 +162,7 @@ function Area_Management.replace_tile(surface, tiles, tileName)
         if collisionCache[hiddenTileName] then
             collides = collisionCache[hiddenTileName]["value"]
         else
-            collides = game.tile_prototypes[hiddenTileName].collision_mask["layer-55"] -- TODO - lookup
+            collides = game.tile_prototypes[hiddenTileName].collision_mask[Config.Game.ModLayer]
             collisionCache[hiddenTileName] = {value = collides}
         end
 
