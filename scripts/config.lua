@@ -57,13 +57,13 @@ if settings and settings.global then
     Config.Settings.STARTING_ALLOWED_TILES_NAME = Config.MOD_PREFIX .. "_starting_allowed_tiles"
     Config.Settings.POPULATED_TILE_BONUS_NAME = Config.MOD_PREFIX .. "_populated_tile_bonus"
 
-    function Config.Settings.Refresh()
+    function Config.Settings.refresh()
         Logger.info("Refreshing config values")
         Config.Settings.STARTING_ALLOWED_TILES = settings.global[Config.Settings.STARTING_ALLOWED_TILES_NAME].value
         Config.Settings.POPULATED_TILE_BONUS = settings.global[Config.Settings.POPULATED_TILE_BONUS_NAME].value
     end
 
-    Config.Settings.Refresh()
+    Config.Settings.refresh()
 end
 
 Logger.trace_block("Config values: %s", Config)

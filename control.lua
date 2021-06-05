@@ -114,7 +114,7 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
 
     if setting == Config.Settings.STARTING_ALLOWED_TILES_NAME or setting == Config.Settings.POPULATED_TILE_BONUS_NAME then
         Logger.info("%s setting changed, refreshing values and recalculating allowed tiles...", setting)
-        Config.Settings.Refresh()
+        Config.Settings.refresh()
         Storage.AllowedTiles.recalculate()
         Gui.ClaimableTileCounter.updateAll()
     end
