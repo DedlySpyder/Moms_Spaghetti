@@ -6,13 +6,13 @@ local LAYER_ONE = Data_Util.CHOSEN_MASKS[1]
 local newPrototypes = {}
 for name, tile in pairs(data.raw["tile"]) do
     if name ~= Config.Prototypes.ALLOWED_TILE then
-        Logger.debug("Modifying tile: %s", name)
+        Logger:debug("Modifying tile: %s", name)
         if not tile.collision_mask then
             tile.collision_mask = {}
         end
 
         if tile.minable then
-            Logger.debug("Tile is minable so creating allow/deny copies")
+            Logger:debug("Tile is minable so creating allow/deny copies")
             local allowedTile = table.deepcopy(tile)
             allowedTile.name = Config.Prototypes.ALLOWED_TILE_PREFIX .. tile.name
             allowedTile.localised_name =  {"MomsSpaghetti_X_allowed", {"tile-name." .. tile.name}}
@@ -28,7 +28,7 @@ for name, tile in pairs(data.raw["tile"]) do
             table.insert(deniedTile.collision_mask, LAYER_ONE)
             table.insert(newPrototypes, deniedTile)
         else
-            Logger.debug("Tile is not minable, adding chosen collision mask")
+            Logger:debug("Tile is not minable, adding chosen collision mask")
             table.insert(tile.collision_mask, LAYER_ONE)
         end
     end

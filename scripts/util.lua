@@ -16,7 +16,7 @@ function Util.invert_name_prefix(name)
     end
 
     local inverted = newPrefix .. baseName
-    Logger.trace("Inverting %s to %s", name, inverted)
+    Logger:trace("Inverting %s to %s", name, inverted)
     return inverted
 end
 

@@ -17,7 +17,7 @@ for category, prototypes in pairs(data.raw) do
     end
 end
 
-Logger.trace_block("All masks: %s", masks)
+Logger:trace_block("All masks: %s", masks)
 local chosenMasks = {}
 local numberMasks = {}
 for i=55,13,-1 do
@@ -28,11 +28,11 @@ for i=55,13,-1 do
         table.insert(chosenMasks, layer)
     end
 end
-Logger.trace_block("All numbered masks: %s", numberMasks)
+Logger:trace_block("All numbered masks: %s", numberMasks)
 
 -- Make sure we have enough masks
 if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
-    Logger.error("ALl layered masks are in use, finding the least populated masks")
+    Logger:error("ALl layered masks are in use, finding the least populated masks")
     for mask, count in pairs(numberMasks) do
         if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS and count < 5 then
             table.insert(chosenMasks, mask)
@@ -42,12 +42,12 @@ if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
     -- Last ditch effort, get something at least
     -- TODO - compatibility - choosing busy masks - this is good for at least a while
     if #chosenMasks < Data_Util.REQUIRED_COLLISION_MASKS then
-        Logger.fatal("Failed to find free layers for Mom'S Spaghetti mod. Picking hardcoded layer instead")
+        Logger:fatal("Failed to find free layers for Mom'S Spaghetti mod. Picking hardcoded layer instead")
         table.insert(chosenMasks, "layer-49")
     end
 end
 
-Logger.debug_block("Chosen mask(s): %s", chosenMasks)
+Logger:debug_block("Chosen mask(s): %s", chosenMasks)
 Data_Util.CHOSEN_MASKS = chosenMasks
 
 local dummyItem = {

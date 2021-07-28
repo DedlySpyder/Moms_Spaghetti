@@ -9,7 +9,7 @@ for _, tile in pairs(data.raw["tile"]) do
         end
     end
 end
-Logger.debug("Found water tiles: %s", waterTiles)
+Logger:debug("Found water tiles: %s", waterTiles)
 
 data:extend({
     {
